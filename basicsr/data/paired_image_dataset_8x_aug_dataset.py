@@ -1,110 +1,215 @@
-import numpy as np
+
 import os
+
+import numpy as np
 import scipy.io as sio
 import torch
-from torch.utils import data as data
+from torch.utils import data
 
-from basicsr.utils import get_root_logger
 from basicsr.utils.registry import DATASET_REGISTRY
 
+
 def data_augmentation(image, mode=0):
-    """
-    Performs 8-way data augmentation.
-    
-    Args:
-        image (np.array): Input image as a NumPy array.
-        mode (int): The augmentation mode (0 to 7).
-    """
+    """Apply one of eight spatial augmentations to an HWC image."""
     if mode == 0:
-        # original
         return image
     elif mode == 1:
-        # flip up and down
         return np.flipud(image)
     elif mode == 2:
-        # rotate counterwise 90 degree
         return np.rot90(image)
     elif mode == 3:
-        # rotate 90 degree and flip up and down
         return np.flipud(np.rot90(image))
     elif mode == 4:
-        # rotate 180 degree
         return np.rot90(image, k=2)
     elif mode == 5:
-        # rotate 180 degree and flip
         return np.flipud(np.rot90(image, k=2))
     elif mode == 6:
-        # rotate 270 degree
         return np.rot90(image, k=3)
     elif mode == 7:
-        # rotate 270 degree and flip
         return np.flipud(np.rot90(image, k=3))
+
+    raise ValueError(f"Invalid augmentation mode: {mode}")
+
 
 @DATASET_REGISTRY.register()
 class PairedMatDataset8xAug(data.Dataset):
-    """Paired .mat dataset for hyperspectral image restoration.
+    """Load paired hyperspectral GT, LR and bicubic-upsampled LMS .mat data.
 
-    Reads LQ (ms), LMS (ms_bicubic), and GT (gt) from a single .mat file.
-    Implements a systematic 8-way data augmentation to replicate HSRMamba/MSDformer strategy.
+    Expected .mat keys:
+        gt:         HWC ground-truth hyperspectral image
+        ms:         HWC low-resolution image
+        ms_bicubic: HWC bicubic-upsampled image
+
+    Training uses eight augmentation modes and random aligned crops.
+    Validation uses every file exactly once without augmentation or cropping.
     """
 
     def __init__(self, opt):
-        super(PairedMatDataset8xAug, self).__init__()
+        super().__init__()
         self.opt = opt
-        
-        self.mat_folder = opt['dataroot_gt']
-        self.mat_files = sorted([os.path.join(self.mat_folder, f) for f in os.listdir(self.mat_folder) if f.endswith('.mat')])
+        self.phase = opt["phase"]
+        self.scale = int(opt["scale"])
+
+        if self.scale <= 0:
+            raise ValueError(f"Scale must be positive, got {self.scale}")
+
+        self.mat_folder = opt["dataroot_gt"]
+
+        if not os.path.isdir(self.mat_folder):
+            raise FileNotFoundError(
+                f"Dataset directory does not exist: {self.mat_folder}"
+            )
+
+        self.mat_files = sorted(
+            os.path.join(self.mat_folder, filename)
+            for filename in os.listdir(self.mat_folder)
+            if filename.lower().endswith(".mat")
+        )
+
+        if not self.mat_files:
+            raise RuntimeError(
+                f"No .mat files found in: {self.mat_folder}"
+            )
+
+        if self.phase == "train":
+            self.gt_size = int(opt["gt_size"])
+
+            if self.gt_size <= 0 or self.gt_size % self.scale != 0:
+                raise ValueError(
+                    f"gt_size ({self.gt_size}) must be positive and "
+                    f"divisible by scale ({self.scale})."
+                )
 
     def __getitem__(self, index):
-        # Calculate the original image index and the augmentation mode
-        original_index = index // 8
-        augmentation_mode = index % 8
+        if self.phase == "train":
+            original_index = index // 8
+            augmentation_mode = index % 8
+        else:
+            original_index = index
+            augmentation_mode = 0
 
         mat_path = self.mat_files[original_index]
+
         try:
-            data = sio.loadmat(mat_path)
-        except Exception as e:
-            logger = get_root_logger()
-            logger.warning(f'Failed to load .mat file {mat_path}, skipping. Error: {e}')
-            return self.__getitem__((index + 1) % (len(self.mat_files) * 8))
+            mat_data = sio.loadmat(mat_path)
+            img_gt = np.asarray(mat_data["gt"], dtype=np.float32)
+            img_lq = np.asarray(mat_data["ms"], dtype=np.float32)
+            img_lms = np.asarray(mat_data["ms_bicubic"], dtype=np.float32)
+        except Exception as exc:
+            raise RuntimeError(
+                f"Failed to load valid GT/LR/LMS data from {mat_path}"
+            ) from exc
 
-        img_gt = np.array(data['gt'], dtype=np.float32)
-        img_lq = np.array(data['ms'], dtype=np.float32)
-        img_lms = np.array(data['ms_bicubic'], dtype=np.float32)
-        
-        scale = self.opt['scale']
+        if (
+            img_gt.ndim != 3
+            or img_lq.ndim != 3
+            or img_lms.ndim != 3
+        ):
+            raise ValueError(
+                f"Expected HWC 3D arrays in {mat_path}; got "
+                f"gt={img_gt.shape}, ms={img_lq.shape}, "
+                f"ms_bicubic={img_lms.shape}"
+            )
 
-        if self.opt['phase'] == 'train':
-            gt_size = self.opt['gt_size']
+        if img_gt.shape[2] != img_lq.shape[2] or (
+            img_gt.shape[2] != img_lms.shape[2]
+        ):
+            raise ValueError(
+                f"Spectral-band mismatch in {mat_path}: "
+                f"gt={img_gt.shape}, ms={img_lq.shape}, "
+                f"ms_bicubic={img_lms.shape}"
+            )
+
+        if img_gt.shape[:2] != img_lms.shape[:2]:
+            raise ValueError(
+                f"GT/LMS spatial mismatch in {mat_path}: "
+                f"gt={img_gt.shape}, ms_bicubic={img_lms.shape}"
+            )
+
+        expected_lq_shape = (
+            img_gt.shape[0] // self.scale,
+            img_gt.shape[1] // self.scale,
+        )
+        if img_gt.shape[0] % self.scale or img_gt.shape[1] % self.scale:
+            raise ValueError(
+                f"GT dimensions must be divisible by scale={self.scale}: "
+                f"{img_gt.shape} in {mat_path}"
+            )
+
+        if img_lq.shape[:2] != expected_lq_shape:
+            raise ValueError(
+                f"GT/LR dimensions do not match scale={self.scale} in "
+                f"{mat_path}: gt={img_gt.shape}, ms={img_lq.shape}, "
+                f"expected LR spatial size={expected_lq_shape}"
+            )
+
+        if self.phase == "train":
+            gt_size = self.gt_size
             h_gt, w_gt, _ = img_gt.shape
-            
-            # 1. Randomly select top-left coordinates on the GT image
-            top = np.random.randint(0, h_gt - gt_size + 1)
-            left = np.random.randint(0, w_gt - gt_size + 1)
 
-            # 2. Crop GT and LMS
-            img_gt = img_gt[top:top + gt_size, left:left + gt_size, :]
-            img_lms = img_lms[top:top + gt_size, left:left + gt_size, :]
+            if h_gt < gt_size or w_gt < gt_size:
+                raise ValueError(
+                    f"GT image {mat_path} is smaller than crop size "
+                    f"{gt_size}: spatial size={(h_gt, w_gt)}"
+                )
 
-            # 3. Calculate corresponding coordinates for LQ and crop
-            top_lq, left_lq = int(top // scale), int(left // scale)
-            lq_size = int(gt_size // scale)
-            img_lq = img_lq[top_lq:top_lq + lq_size, left_lq:left_lq + lq_size, :]
+            # Choose GT crop coordinates aligned to the LR grid.
+            top = (
+                np.random.randint(0, (h_gt - gt_size) // self.scale + 1)
+                * self.scale
+            )
+            left = (
+                np.random.randint(0, (w_gt - gt_size) // self.scale + 1)
+                * self.scale
+            )
 
-            # Apply the systematic 8-way data augmentation
-            # Note: We ensure memory contiguity before transposing later
-            img_gt = data_augmentation(img_gt, mode=augmentation_mode)
-            img_lq = data_augmentation(img_lq, mode=augmentation_mode)
-            img_lms = data_augmentation(img_lms, mode=augmentation_mode)
-        
-        # Convert to PyTorch CHW format
-        # np.ascontiguousarray is important for safe tensor conversion
-        img_gt = torch.from_numpy(np.ascontiguousarray(np.transpose(img_gt, (2, 0, 1)))).float()
-        img_lq = torch.from_numpy(np.ascontiguousarray(np.transpose(img_lq, (2, 0, 1)))).float()
-        img_lms = torch.from_numpy(np.ascontiguousarray(np.transpose(img_lms, (2, 0, 1)))).float()
+            img_gt = img_gt[
+                top:top + gt_size,
+                left:left + gt_size,
+                :
+            ]
+            img_lms = img_lms[
+                top:top + gt_size,
+                left:left + gt_size,
+                :
+            ]
 
-        return {'lq': img_lq, 'gt': img_gt, 'lms': img_lms, 'lq_path': mat_path, 'gt_path': mat_path}
+            top_lq = top // self.scale
+            left_lq = left // self.scale
+            lq_size = gt_size // self.scale
+
+            img_lq = img_lq[
+                top_lq:top_lq + lq_size,
+                left_lq:left_lq + lq_size,
+                :
+            ]
+
+            img_gt = data_augmentation(img_gt, augmentation_mode)
+            img_lq = data_augmentation(img_lq, augmentation_mode)
+            img_lms = data_augmentation(img_lms, augmentation_mode)
+
+        # Convert HWC NumPy arrays to contiguous CHW float32 tensors.
+        img_gt = torch.from_numpy(
+            np.ascontiguousarray(img_gt.transpose(2, 0, 1))
+        ).float()
+
+        img_lq = torch.from_numpy(
+            np.ascontiguousarray(img_lq.transpose(2, 0, 1))
+        ).float()
+
+        img_lms = torch.from_numpy(
+            np.ascontiguousarray(img_lms.transpose(2, 0, 1))
+        ).float()
+
+        return {
+            "lq": img_lq,
+            "gt": img_gt,
+            "lms": img_lms,
+            "lq_path": mat_path,
+            "gt_path": mat_path,
+        }
 
     def __len__(self):
-        # The dataset is 8 times larger due to the augmentation
-        return len(self.mat_files) * 8
+        if self.phase == "train":
+            return len(self.mat_files) * 8
+        return len(self.mat_files)
