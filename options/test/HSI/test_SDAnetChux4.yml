@@ -9,7 +9,7 @@ datasets:
   test_1:
     name: Chikusei_test
     type: TestMatDatasetCHU
-    dataroot_gt: /root/autodl-tmp/datasets/Chikusei_x4/Chikusei_test.mat
+    dataroot_gt: /home/aidslab/hemanth-ug4/datasets/Chikusei_x4_sspsr_split/Chikusei_test.mat
     io_backend:
       type: disk
 
@@ -27,7 +27,7 @@ network_g:
   ste_mask_tau: 0.15
 
 path:
-  pretrain_network_g: ~
+  pretrain_network_g: /home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANet_paper_settings/models/net_g_33000.pth
   strict_load_g: true
 
 val:
