@@ -623,5 +623,5 @@ def calculate_ssim_float(img, img2, crop_border, test_y_channel=False, data_rang
         img = img[crop_border:-crop_border, crop_border:-crop_border, ...]
         img2 = img2[crop_border:-crop_border, crop_border:-crop_border, ...]
     
-    # multichannel=True 会为所有通道计算 SSIM 并返回平均值，适合高光谱
-    return structural_similarity(im1=img, im2=img2, multichannel=True, data_range=data_range)
+    # Calculate SSIM per spectral band and average across bands.
+    return compare_mssim(x_true=img2, x_pred=img, data_range=data_range)

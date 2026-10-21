@@ -13,8 +13,7 @@ RAW = (
     / "hemanth-ug4/datasets/Chikusei_raw_reextracted/"
       "Chikusei_MATLAB/HyperspecVNIR_Chikusei_20140729.mat"
 )
-OUT = Path.home() / "hemanth-ug4/datasets/Chikusei_x4_sspsr_split"
-
+OUT = Path.home() / "hemanth-ug4/datasets/Chikusei_x4_sspsr_spatial_split"
 PATCH = 128
 STRIDE = 64
 SCALE = 4
@@ -100,15 +99,17 @@ savemat(
 
 del test_scenes
 
-# -------------------- PATCH-LEVEL 90/10 SPLIT --------------------
-# Use the full area below the four test scenes.
+
+# -------------------- SPATIAL TRAIN/VALIDATION SPLIT --------------------
+# Keep the four held-out test scenes unchanged.
+# Validation uses complete spatial patch rows rather than random patches.
+# One patch row on either side of each validation row is discarded as a buffer.
+
 region = cube[512:, :, :]
 del cube
 
 print(f"Patch source region: {region.shape}", flush=True)
 
-# Resize the full region before cropping patches.
-# This keeps the LR/LMS coordinates aligned with the HR region.
 lr_region = imresize_np(region, 1.0 / SCALE).astype(np.float32)
 lms_region = imresize_np(lr_region, float(SCALE)).astype(np.float32)
 
@@ -123,19 +124,25 @@ coordinates = [
     for x in range(0, region.shape[1] - PATCH + 1, STRIDE)
 ]
 
-rng = np.random.default_rng(SEED)
-permutation = rng.permutation(len(coordinates))
+# Spatial grid-row indices reserved exclusively for validation.
+eval_rows = {3, 15}
 
-n_eval = int(np.ceil(0.10 * len(coordinates)))
-eval_indices = set(permutation[:n_eval].tolist())
+# Exclude adjacent grid rows to prevent overlapping HR patches.
+buffer_rows = {2, 4, 14, 16}
 
-print(
-    f"Total patches: {len(coordinates)} | "
-    f"Train: {len(coordinates) - n_eval} | Eval: {n_eval}",
-    flush=True,
-)
+n_train = n_eval = n_buffer = 0
 
 for i, (y, x) in enumerate(coordinates):
+    grid_row = y // STRIDE
+
+    if grid_row in buffer_rows:
+        n_buffer += 1
+        continue
+
+    is_eval = grid_row in eval_rows
+    destination = eval_dir if is_eval else train_dir
+    prefix = "eval" if is_eval else "train"
+
     gt = np.ascontiguousarray(region[y:y + PATCH, x:x + PATCH, :])
     lms = np.ascontiguousarray(lms_region[y:y + PATCH, x:x + PATCH, :])
 
@@ -155,9 +162,6 @@ for i, (y, x) in enumerate(coordinates):
     if lms.shape != gt.shape:
         raise ValueError(f"Bad LMS patch shape at {(y, x)}: {lms.shape}")
 
-    is_eval = i in eval_indices
-    destination = eval_dir if is_eval else train_dir
-    prefix = "eval" if is_eval else "train"
     patch_path = destination / f"{prefix}_{i:06d}.mat"
 
     savemat(
@@ -170,8 +174,20 @@ for i, (y, x) in enumerate(coordinates):
         do_compression=True,
     )
 
+    if is_eval:
+        n_eval += 1
+    else:
+        n_train += 1
+
     if (i + 1) % 50 == 0 or i + 1 == len(coordinates):
-        print(f"Saved {i + 1}/{len(coordinates)} patches", flush=True)
+        print(f"Processed {i + 1}/{len(coordinates)} grid patches", flush=True)
+
+print(
+    f"Spatial split: train={n_train}, eval={n_eval}, "
+    f"discarded buffer={n_buffer}",
+    flush=True,
+)
+
 
 # -------------------- VALIDATE OUTPUT --------------------
 print("Validating generated dataset...", flush=True)
