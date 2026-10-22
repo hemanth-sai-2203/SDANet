@@ -17,18 +17,25 @@ from basicsr.archs.SDAnet_arch import (
 class RegionalDSCA(DSCA):
     """DSCA with independently estimated sparsity in a 2x2 spatial grid."""
 
+
     def _regional_attention(self, x):
         b, _, h, w = x.shape
         if h % 2 or w % 2:
-            raise ValueError(
-                f"RegionalDSCA requires even feature dimensions; got {h}x{w}"
-            )
+            raise ValueError(f"Expected even dimensions, got {h}x{w}")
 
-        # Compute projections on the complete feature map so that
-        # depthwise-convolution padding matches the original DSCA.
+        # Preserve the baseline's global Q/K/V attention computation.
         q = self.q_dw(self.q_proj(x))
         k = self.k_dw(self.k_proj(x))
         v = self.v_dw(self.v_proj(x))
+
+        q = q.reshape(b, self.num_heads, self.head_dim, h * w)
+        k = k.reshape(b, self.num_heads, self.head_dim, h * w)
+        v = v.reshape(b, self.num_heads, self.head_dim, h * w)
+
+        q = F.normalize(q, dim=-1)
+        k = F.normalize(k, dim=-1)
+        attn = (q @ k.transpose(-2, -1)) * self.temperature
+        soft_prob = F.softmax(attn, dim=-1)
 
         gate = self.k_mlp(self.k_dconv(x))
         regions = [
@@ -38,32 +45,18 @@ class RegionalDSCA(DSCA):
             (h // 2, h, w // 2, w),
         ]
 
-        output_rows = []
         output_quadrants = []
 
         for y0, y1, x0, x1 in regions:
-            qr = q[:, :, y0:y1, x0:x1]
-            kr = k[:, :, y0:y1, x0:x1]
-            vr = v[:, :, y0:y1, x0:x1]
-
-            area = (y1 - y0) * (x1 - x0)
-            qr = qr.reshape(b, self.num_heads, self.head_dim, area)
-            kr = kr.reshape(b, self.num_heads, self.head_dim, area)
-            vr = vr.reshape(b, self.num_heads, self.head_dim, area)
-
-            qr = F.normalize(qr, dim=-1)
-            kr = F.normalize(kr, dim=-1)
-            attn = (qr @ kr.transpose(-2, -1)) * self.temperature
-
-            # One sparsity factor per sample and region.
+            # One gate factor per sample and region.
             factor = gate[:, :, y0:y1, x0:x1].mean(dim=(1, 2, 3))
             factor = factor.clamp(self.eps, 1.0 - self.eps)
+
             k_float = 1.0 + (self.head_dim - 1.0) * factor
             k_count = torch.floor(k_float).long().clamp(
                 min=1, max=self.head_dim
             )
 
-            soft_prob = F.softmax(attn, dim=-1)
             k_ratio = (k_float / self.head_dim).view(b, 1, 1, 1)
             hard_mask = self._build_hard_mask(attn, k_count)
             threshold = self._continuous_threshold(attn, k_ratio)
@@ -74,13 +67,22 @@ class RegionalDSCA(DSCA):
 
             prob = soft_prob * mask
             prob = prob / prob.sum(dim=-1, keepdim=True).clamp_min(self.eps)
+
+            # Apply the globally computed attention to this region's values.
+
+            indices = (
+                torch.arange(y0, y1, device=x.device)[:, None] * w
+                + torch.arange(x0, x1, device=x.device)[None, :]
+            ).reshape(-1)
+            vr = v.index_select(-1, indices)
+
             out = prob @ vr
             out = out * self.head_weights.view(1, self.num_heads, 1, 1)
             out = out.reshape(b, -1, y1 - y0, x1 - x0)
             output_quadrants.append(self.project_out(out))
 
-        top = torch.cat(output_quadrants[0:2], dim=3)
-        bottom = torch.cat(output_quadrants[2:4], dim=3)
+        top = torch.cat(output_quadrants[:2], dim=3)
+        bottom = torch.cat(output_quadrants[2:], dim=3)
         return torch.cat([top, bottom], dim=2)
 
     def forward(self, x):
