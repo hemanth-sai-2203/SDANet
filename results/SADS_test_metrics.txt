@@ -1,0 +1,16 @@
+Experiment: SADS Regional DCSA (2x2)
+Checkpoint: net_g_33000.pth
+Test dataset: Chikusei spatial split (4 scenes)
+
+MPSNR: 39.9855
+SSIM:   0.9402
+SAM:    2.4230
+ERGAS:  5.1892
+CC:     0.9528
+
+Baseline test:
+MPSNR: 40.0314
+SSIM:   0.9409
+SAM:    2.4037
+ERGAS:  5.1656
+CC:     0.9532

@@ -1,0 +1,54 @@
+name: SDANetRegionalPilot_Chikusei_x4_test
+model_type: SDAModel
+scale: 4
+num_gpu: 1
+manual_seed: 10
+
+
+datasets:
+  test_1:
+    name: Chikusei_test
+    type: TestMatDatasetCHU
+    dataroot_gt: /home/aidslab/hemanth-ug4/datasets/Chikusei_x4_sspsr_spatial_split/Chikusei_test.mat
+    io_backend:
+      type: disk
+
+network_g:
+  type: SDANET_SADS
+  n_feats: 128
+  n_block: [2, 2, 2, 2]
+  n_group: 4
+  num_heads: 4
+  scale: 4
+  n_colors: 128
+  n_lms_colors: 128
+  drop_path_rate: 0.4
+  expansion_ratio: 1.0
+  ste_mask_tau: 0.15
+
+path:
+  pretrain_network_g: /home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANetRegionalPilot_spatial_split/models/net_g_500.pth
+  strict_load_g: true
+  param_key_g: params_ema
+
+val:
+  save_img: false
+  suffix: ~
+  metrics:
+    ssim:
+      type: calculate_ssim_float
+      crop_border: 0
+      data_range: 1
+    mpsnr:
+      type: calculate_mpsnr_hsi
+      crop_border: 0
+      data_range: 1
+    sam:
+      type: calculate_sam_hsi
+      crop_border: 0
+    ergas:
+      type: calculate_ergas_hsi
+      crop_border: 0
+    CC:
+      type: calculate_corr_hsi
+      crop_border: 0

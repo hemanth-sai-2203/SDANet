@@ -1,0 +1,228 @@
+2026-10-21 15:47:34,622 INFO: 
+                ____                _       _____  ____
+               / __ ) ____ _ _____ (_)_____/ ___/ / __ \
+              / __  |/ __ `// ___// // ___/\__ \ / /_/ /
+             / /_/ // /_/ /(__  )/ // /__ ___/ // _, _/
+            /_____/ \__,_//____//_/ \___//____//_/ |_|
+     ______                   __   __                 __      __
+    / ____/____   ____   ____/ /  / /   __  __ _____ / /__   / /
+   / / __ / __ \ / __ \ / __  /  / /   / / / // ___// //_/  / /
+  / /_/ // /_/ // /_/ // /_/ /  / /___/ /_/ // /__ / /<    /_/
+  \____/ \____/ \____/ \____/  /_____/\____/ \___//_/|_|  (_)
+    
+Version Information: 
+	BasicSR: 1.3.4.8
+	PyTorch: 2.11.0+cu128
+	TorchVision: 0.26.0+cu128
+2026-10-21 15:47:34,622 INFO: 
+  name: SDANetSADS_Chikusei_x4_test
+  model_type: SDAModel
+  scale: 4
+  num_gpu: 1
+  manual_seed: 10
+  datasets:[
+    test_1:[
+      name: Chikusei_test
+      type: TestMatDatasetCHU
+      dataroot_gt: /home/aidslab/hemanth-ug4/datasets/Chikusei_x4_sspsr_spatial_split/Chikusei_test.mat
+      io_backend:[
+        type: disk
+      ]
+      phase: test
+      scale: 4
+    ]
+  ]
+  network_g:[
+    type: SDANET_SADS
+    n_feats: 128
+    n_block: [2, 2, 2, 2]
+    n_group: 4
+    num_heads: 4
+    scale: 4
+    n_colors: 128
+    n_lms_colors: 128
+    drop_path_rate: 0.4
+    expansion_ratio: 1.0
+    ste_mask_tau: 0.15
+  ]
+  path:[
+    pretrain_network_g: /home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANetSADS_spatial_split/models/net_g_33000.pth
+    strict_load_g: True
+    param_key_g: params_ema
+    results_root: /home/aidslab/hemanth-ug4/SDANet_repo/results/SDANetSADS_Chikusei_x4_test
+    log: /home/aidslab/hemanth-ug4/SDANet_repo/results/SDANetSADS_Chikusei_x4_test
+    visualization: /home/aidslab/hemanth-ug4/SDANet_repo/results/SDANetSADS_Chikusei_x4_test/visualization
+  ]
+  val:[
+    save_img: False
+    suffix: None
+    metrics:[
+      ssim:[
+        type: calculate_ssim_float
+        crop_border: 0
+        data_range: 1
+      ]
+      mpsnr:[
+        type: calculate_mpsnr_hsi
+        crop_border: 0
+        data_range: 1
+      ]
+      sam:[
+        type: calculate_sam_hsi
+        crop_border: 0
+      ]
+      ergas:[
+        type: calculate_ergas_hsi
+        crop_border: 0
+      ]
+      CC:[
+        type: calculate_corr_hsi
+        crop_border: 0
+      ]
+    ]
+  ]
+  dist: False
+  rank: 0
+  world_size: 1
+  auto_resume: False
+  is_train: False
+
+2026-10-21 15:47:38,196 INFO: Dataset [TestMatDatasetCHU] - Chikusei_test is built.
+2026-10-21 15:47:38,196 INFO: Number of test images in Chikusei_test: 4
+2026-10-21 15:47:38,225 INFO: Network [SDANET_SADS] is created.
+2026-10-21 15:47:38,456 INFO: Network: SDANET_SADS, with parameters: 3,086,272
+2026-10-21 15:47:38,456 INFO: SDANET_SADS(
+  (head): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (body): ModuleList(
+    (0-3): 4 x SDAStageSADS(
+      (body): ModuleList(
+        (0): SDABlockSADS(
+          (norm1): LayerNorm()
+          (fused_attn): RegionalDSCA(
+            (k_dconv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (k_mlp): Sequential(
+              (0): Conv2d(128, 16, kernel_size=(1, 1), stride=(1, 1))
+              (1): GELU(approximate='none')
+              (2): Conv2d(16, 128, kernel_size=(1, 1), stride=(1, 1))
+              (3): Sigmoid()
+            )
+            (q_proj): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (k_proj): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (v_proj): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (q_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (k_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (v_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (project_out): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (local_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128)
+            (local_pw): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+            (local_act): GELU(approximate='none')
+            (se_reduce): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (se_expand): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (fusion): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (drop_path1): Identity()
+          (norm2): LayerNorm()
+          (ffn_prestep): Sequential(
+            (0): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+            (1): GELU(approximate='none')
+            (2): Dropout(p=0.2, inplace=False)
+            (3): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128)
+            (4): GELU(approximate='none')
+            (5): Dropout(p=0.2, inplace=False)
+            (6): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (ffn_fe): FEFeedForward(
+            (expand): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (f5_real): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64, bias=False)
+            (f5_imag): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64, bias=False)
+            (f3_real): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+            (f3_imag): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+            (spatial5): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64, bias=False)
+            (spatial3): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+            (act): GELU(approximate='none')
+            (drop1): Dropout(p=0.2, inplace=False)
+            (drop2): Dropout(p=0.2, inplace=False)
+            (project): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+          (drop_path2): Identity()
+        )
+        (1): SDABlockSADS(
+          (norm1): LayerNorm()
+          (fused_attn): RegionalDSCA(
+            (k_dconv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (k_mlp): Sequential(
+              (0): Conv2d(128, 16, kernel_size=(1, 1), stride=(1, 1))
+              (1): GELU(approximate='none')
+              (2): Conv2d(16, 128, kernel_size=(1, 1), stride=(1, 1))
+              (3): Sigmoid()
+            )
+            (q_proj): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (k_proj): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (v_proj): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (q_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (k_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (v_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (project_out): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (local_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128)
+            (local_pw): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+            (local_act): GELU(approximate='none')
+            (se_reduce): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (se_expand): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (fusion): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (drop_path1): DropPath()
+          (norm2): LayerNorm()
+          (ffn_prestep): Sequential(
+            (0): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+            (1): GELU(approximate='none')
+            (2): Dropout(p=0.2, inplace=False)
+            (3): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128)
+            (4): GELU(approximate='none')
+            (5): Dropout(p=0.2, inplace=False)
+            (6): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (ffn_fe): FEFeedForward(
+            (expand): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (f5_real): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64, bias=False)
+            (f5_imag): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64, bias=False)
+            (f3_real): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+            (f3_imag): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+            (spatial5): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64, bias=False)
+            (spatial3): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+            (act): GELU(approximate='none')
+            (drop1): Dropout(p=0.2, inplace=False)
+            (drop2): Dropout(p=0.2, inplace=False)
+            (project): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+          (drop_path2): DropPath()
+        )
+      )
+      (body_tail): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    )
+  )
+  (body_tail): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (upsampler): HSI_Upsampler(
+    (path1_ps): Sequential(
+      (0): Conv2d(128, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (1): PixelShuffle(upscale_factor=2)
+      (2): GELU(approximate='none')
+    )
+    (path2_interp): Sequential(
+      (0): Upsample(scale_factor=2.0, mode='bicubic')
+      (1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    )
+    (fusion): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+  )
+  (lms_proc): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (final_conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+2026-10-21 15:47:38,485 INFO: Loading SDANET_SADS model from /home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANetSADS_spatial_split/models/net_g_33000.pth, with param key: [params_ema].
+2026-10-21 15:47:38,511 INFO: Model [SDAModel] is created.
+2026-10-21 15:47:38,511 INFO: Testing Chikusei_test...
+2026-10-21 15:47:50,277 INFO: Validation Chikusei_test
+	 # ssim: 0.9402	Best: 0.9402 @ SDANetSADS_Chikusei_x4_test iter
+	 # mpsnr: 39.9855	Best: 39.9855 @ SDANetSADS_Chikusei_x4_test iter
+	 # sam: 2.4230	Best: 2.4230 @ SDANetSADS_Chikusei_x4_test iter
+	 # ergas: 5.1892	Best: 5.1892 @ SDANetSADS_Chikusei_x4_test iter
+	 # CC: 0.9528	Best: 0.9528 @ SDANetSADS_Chikusei_x4_test iter
+

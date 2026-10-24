@@ -1,0 +1,401 @@
+Disable distributed.
+2026-10-23 13:39:06,213 INFO: 
+                ____                _       _____  ____
+               / __ ) ____ _ _____ (_)_____/ ___/ / __ \
+              / __  |/ __ `// ___// // ___/\__ \ / /_/ /
+             / /_/ // /_/ /(__  )/ // /__ ___/ // _, _/
+            /_____/ \__,_//____//_/ \___//____//_/ |_|
+     ______                   __   __                 __      __
+    / ____/____   ____   ____/ /  / /   __  __ _____ / /__   / /
+   / / __ / __ \ / __ \ / __  /  / /   / / / // ___// //_/  / /
+  / /_/ // /_/ // /_/ // /_/ /  / /___/ /_/ // /__ / /<    /_/
+  \____/ \____/ \____/ \____/  /_____/\____/ \___//_/|_|  (_)
+    
+Version Information: 
+	BasicSR: 1.3.4.8
+	PyTorch: 2.11.0+cu128
+	TorchVision: 0.26.0+cu128
+2026-10-23 13:39:06,213 INFO: 
+  name: SDANetIndependentUpsampler_spatial_split
+  model_type: SDAModel
+  scale: 4
+  num_gpu: 1
+  manual_seed: 10
+  datasets:[
+    train:[
+      name: Chikusei
+      type: PairedMatDataset8xAug
+      dataroot_gt: ../datasets/Chikusei_x4_sspsr_spatial_split/trains
+      io_backend:[
+        type: disk
+      ]
+      gt_size: 128
+      use_hflip: True
+      use_rot: True
+      use_shuffle: True
+      num_worker_per_gpu: 8
+      batch_size_per_gpu: 16
+      dataset_enlarge_ratio: 1
+      prefetch_mode: None
+      phase: train
+      scale: 4
+    ]
+    val_1:[
+      name: Chikusei_eval
+      type: PairedMatDataset8xAug
+      dataroot_gt: ../datasets/Chikusei_x4_sspsr_spatial_split/evals
+      io_backend:[
+        type: disk
+      ]
+      phase: val
+      scale: 4
+    ]
+  ]
+  network_g:[
+    type: SDANET_SADS_IndUp
+    n_feats: 128
+    n_block: [2, 2, 2, 2]
+    n_group: 4
+    num_heads: 4
+    scale: 4
+    n_colors: 128
+    n_lms_colors: 128
+    drop_path_rate: 0.4
+    expansion_ratio: 1.0
+    ste_mask_tau: 0.15
+  ]
+  path:[
+    pretrain_network_g: experiments/SDANetRegionalContinue66K_spatial_split/models/net_g_57000_indup_init.pth
+    param_key_g: params_ema
+    strict_load_g: False
+    resume_state: None
+    experiments_root: /home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANetIndependentUpsampler_spatial_split
+    models: /home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANetIndependentUpsampler_spatial_split/models
+    training_states: /home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANetIndependentUpsampler_spatial_split/training_states
+    log: /home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANetIndependentUpsampler_spatial_split
+    visualization: /home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANetIndependentUpsampler_spatial_split/visualization
+  ]
+  train:[
+    ema_decay: 0.999
+    optim_g:[
+      type: Adam
+      lr: 1e-05
+      weight_decay: 0
+      betas: [0.9, 0.99]
+    ]
+    scheduler:[
+      type: CosineAnnealingRestartLR
+      periods: [5000]
+      restart_weights: [1]
+      eta_min: 1e-07
+    ]
+    total_iter: 5000
+    warmup_iter: -1
+    pixel_opt:[
+      type: L1Loss
+      loss_weight: 1.0
+      reduction: mean
+    ]
+    sam_opt:[
+      type: SAMLoss
+      loss_weight: 0.2
+    ]
+  ]
+  val:[
+    val_freq: 1000.0
+    save_img: False
+    pbar: False
+    metrics:[
+      ssim:[
+        type: calculate_ssim_float
+        crop_border: 0
+        data_range: 1
+      ]
+      mpsnr:[
+        type: calculate_mpsnr_hsi
+        crop_border: 0
+        data_range: 1
+      ]
+      sam:[
+        type: calculate_sam_hsi
+        crop_border: 0
+      ]
+      ergas:[
+        type: calculate_ergas_hsi
+        crop_border: 0
+      ]
+      CC:[
+        type: calculate_corr_hsi
+        crop_border: 0
+      ]
+    ]
+  ]
+  logger:[
+    print_freq: 100
+    save_checkpoint_freq: 1000.0
+    use_tb_logger: True
+    wandb:[
+      project: None
+      resume_id: None
+    ]
+  ]
+  dist_params:[
+    backend: nccl
+    port: 29706
+  ]
+  dist: False
+  rank: 0
+  world_size: 1
+  auto_resume: False
+  is_train: True
+  root_path: /home/aidslab/hemanth-ug4/SDANet_repo
+
+2026-10-23 13:39:06,239 INFO: Dataset [PairedMatDataset8xAug] - Chikusei is built.
+2026-10-23 13:39:06,239 INFO: Training statistics:
+	Number of train images: 5208
+	Dataset enlarge ratio: 1
+	Batch size per gpu: 16
+	World size (gpu number): 1
+	Require iter number per epoch: 326
+	Total epochs: 16; iters: 5000.
+2026-10-23 13:39:06,239 INFO: Dataset [PairedMatDataset8xAug] - Chikusei_eval is built.
+2026-10-23 13:39:06,239 INFO: Number of val images/folders in Chikusei_eval: 62
+2026-10-23 13:39:06,270 INFO: Network [SDANET_SADS_IndUp] is created.
+2026-10-23 13:39:06,507 INFO: Network: SDANET_SADS_IndUp, with parameters: 3,676,608
+2026-10-23 13:39:06,507 INFO: SDANET_SADS_IndUp(
+  (head): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (body): ModuleList(
+    (0-3): 4 x SDAStageSADS(
+      (body): ModuleList(
+        (0): SDABlockSADS(
+          (norm1): LayerNorm()
+          (fused_attn): RegionalDSCA(
+            (k_dconv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (k_mlp): Sequential(
+              (0): Conv2d(128, 16, kernel_size=(1, 1), stride=(1, 1))
+              (1): GELU(approximate='none')
+              (2): Conv2d(16, 128, kernel_size=(1, 1), stride=(1, 1))
+              (3): Sigmoid()
+            )
+            (q_proj): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (k_proj): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (v_proj): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (q_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (k_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (v_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (project_out): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (local_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128)
+            (local_pw): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+            (local_act): GELU(approximate='none')
+            (se_reduce): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (se_expand): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (fusion): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (drop_path1): Identity()
+          (norm2): LayerNorm()
+          (ffn_prestep): Sequential(
+            (0): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+            (1): GELU(approximate='none')
+            (2): Dropout(p=0.2, inplace=False)
+            (3): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128)
+            (4): GELU(approximate='none')
+            (5): Dropout(p=0.2, inplace=False)
+            (6): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (ffn_fe): FEFeedForward(
+            (expand): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (f5_real): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64, bias=False)
+            (f5_imag): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64, bias=False)
+            (f3_real): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+            (f3_imag): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+            (spatial5): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64, bias=False)
+            (spatial3): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+            (act): GELU(approximate='none')
+            (drop1): Dropout(p=0.2, inplace=False)
+            (drop2): Dropout(p=0.2, inplace=False)
+            (project): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+          (drop_path2): Identity()
+        )
+        (1): SDABlockSADS(
+          (norm1): LayerNorm()
+          (fused_attn): RegionalDSCA(
+            (k_dconv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (k_mlp): Sequential(
+              (0): Conv2d(128, 16, kernel_size=(1, 1), stride=(1, 1))
+              (1): GELU(approximate='none')
+              (2): Conv2d(16, 128, kernel_size=(1, 1), stride=(1, 1))
+              (3): Sigmoid()
+            )
+            (q_proj): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (k_proj): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (v_proj): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (q_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (k_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (v_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (project_out): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (local_dw): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128)
+            (local_pw): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+            (local_act): GELU(approximate='none')
+            (se_reduce): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (se_expand): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (fusion): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (drop_path1): DropPath()
+          (norm2): LayerNorm()
+          (ffn_prestep): Sequential(
+            (0): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+            (1): GELU(approximate='none')
+            (2): Dropout(p=0.2, inplace=False)
+            (3): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128)
+            (4): GELU(approximate='none')
+            (5): Dropout(p=0.2, inplace=False)
+            (6): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (ffn_fe): FEFeedForward(
+            (expand): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (f5_real): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64, bias=False)
+            (f5_imag): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64, bias=False)
+            (f3_real): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+            (f3_imag): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+            (spatial5): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64, bias=False)
+            (spatial3): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+            (act): GELU(approximate='none')
+            (drop1): Dropout(p=0.2, inplace=False)
+            (drop2): Dropout(p=0.2, inplace=False)
+            (project): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+          (drop_path2): DropPath()
+        )
+      )
+      (body_tail): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    )
+  )
+  (body_tail): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (upsampler): HSI_UpsamplerIndependent(
+    (path1_ps): Sequential(
+      (0): Conv2d(128, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (1): PixelShuffle(upscale_factor=2)
+      (2): GELU(approximate='none')
+    )
+    (path2_ps): Sequential(
+      (0): Conv2d(128, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (1): PixelShuffle(upscale_factor=2)
+      (2): GELU(approximate='none')
+    )
+    (path2_interp): Sequential(
+      (0): Upsample(scale_factor=2.0, mode='bicubic')
+      (1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    )
+    (fusion): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+  )
+  (lms_proc): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (final_conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+2026-10-23 13:39:06,539 INFO: Loading SDANET_SADS_IndUp model from experiments/SDANetRegionalContinue66K_spatial_split/models/net_g_57000_indup_init.pth, with param key: [params_ema].
+2026-10-23 13:39:06,579 INFO: Use Exponential Moving Average with decay: 0.999
+2026-10-23 13:39:06,684 INFO: Network [SDANET_SADS_IndUp] is created.
+2026-10-23 13:39:06,723 INFO: Loading SDANET_SADS_IndUp model from experiments/SDANetRegionalContinue66K_spatial_split/models/net_g_57000_indup_init.pth, with param key: [params_ema].
+2026-10-23 13:39:06,737 INFO: Loss [L1Loss] is created.
+2026-10-23 13:39:06,737 INFO: Loss [SAMLoss] is created.
+2026-10-23 13:39:06,738 INFO: Model [SDAModel] is created.
+2026-10-23 13:39:06,797 INFO: Start training from epoch: 0, iter: 0
+2026-10-23 13:39:31,344 INFO: [SDANe..][epoch:  0, iter:     100, lr:(9.990e-06,)] [eta: 0:15:13, time (data): 0.245 (0.026)] l_pix: 5.5537e-03 l_sam: 2.1881e-03 
+2026-10-23 13:39:50,618 INFO: [SDANe..][epoch:  0, iter:     200, lr:(9.961e-06,)] [eta: 0:15:09, time (data): 0.219 (0.020)] l_pix: 5.1248e-03 l_sam: 2.1260e-03 
+2026-10-23 13:40:09,682 INFO: [SDANe..][epoch:  0, iter:     300, lr:(9.913e-06,)] [eta: 0:14:52, time (data): 0.191 (0.015)] l_pix: 4.8614e-03 l_sam: 1.9163e-03 
+2026-10-23 13:40:30,017 INFO: [SDANe..][epoch:  1, iter:     400, lr:(9.845e-06,)] [eta: 0:14:48, time (data): 0.197 (0.020)] l_pix: 5.2072e-03 l_sam: 2.0768e-03 
+2026-10-23 13:40:49,541 INFO: [SDANe..][epoch:  1, iter:     500, lr:(9.759e-06,)] [eta: 0:14:31, time (data): 0.195 (0.015)] l_pix: 4.9261e-03 l_sam: 2.0124e-03 
+2026-10-23 13:41:08,721 INFO: [SDANe..][epoch:  1, iter:     600, lr:(9.654e-06,)] [eta: 0:14:10, time (data): 0.194 (0.015)] l_pix: 4.5417e-03 l_sam: 1.8153e-03 
+2026-10-23 13:41:29,272 INFO: [SDANe..][epoch:  2, iter:     700, lr:(9.530e-06,)] [eta: 0:13:58, time (data): 0.206 (0.027)] l_pix: 5.3690e-03 l_sam: 2.1934e-03 
+2026-10-23 13:41:48,475 INFO: [SDANe..][epoch:  2, iter:     800, lr:(9.389e-06,)] [eta: 0:13:37, time (data): 0.199 (0.021)] l_pix: 5.0604e-03 l_sam: 1.9216e-03 
+2026-10-23 13:42:07,985 INFO: [SDANe..][epoch:  2, iter:     900, lr:(9.231e-06,)] [eta: 0:13:18, time (data): 0.195 (0.016)] l_pix: 5.0449e-03 l_sam: 1.9491e-03 
+2026-10-23 13:42:28,464 INFO: [SDANe..][epoch:  3, iter:   1,000, lr:(9.056e-06,)] [eta: 0:13:02, time (data): 0.200 (0.022)] l_pix: 4.6923e-03 l_sam: 1.9624e-03 
+2026-10-23 13:42:28,464 INFO: Saving models and training states.
+2026-10-23 13:42:41,174 INFO: Validation Chikusei_eval
+	 # ssim: 0.9495	Best: 0.9495 @ 1000 iter
+	 # mpsnr: 41.6474	Best: 41.6474 @ 1000 iter
+	 # sam: 2.1817	Best: 2.1817 @ 1000 iter
+	 # ergas: 4.4221	Best: 4.4221 @ 1000 iter
+	 # CC: 0.9474	Best: 0.9474 @ 1000 iter
+
+2026-10-23 13:43:00,507 INFO: [SDANe..][epoch:  3, iter:   1,100, lr:(8.866e-06,)] [eta: 0:13:27, time (data): 0.193 (0.015)] l_pix: 5.4038e-03 l_sam: 2.2974e-03 
+2026-10-23 13:43:20,097 INFO: [SDANe..][epoch:  3, iter:   1,200, lr:(8.661e-06,)] [eta: 0:13:03, time (data): 0.195 (0.016)] l_pix: 5.7124e-03 l_sam: 2.2430e-03 
+2026-10-23 13:43:39,772 INFO: [SDANe..][epoch:  3, iter:   1,300, lr:(8.441e-06,)] [eta: 0:12:39, time (data): 0.197 (0.016)] l_pix: 4.7971e-03 l_sam: 2.0041e-03 
+2026-10-23 13:44:00,411 INFO: [SDANe..][epoch:  4, iter:   1,400, lr:(8.208e-06,)] [eta: 0:12:19, time (data): 0.202 (0.022)] l_pix: 5.1590e-03 l_sam: 1.9724e-03 
+2026-10-23 13:44:20,010 INFO: [SDANe..][epoch:  4, iter:   1,500, lr:(7.962e-06,)] [eta: 0:11:56, time (data): 0.196 (0.016)] l_pix: 5.6850e-03 l_sam: 2.3258e-03 
+2026-10-23 13:44:39,567 INFO: [SDANe..][epoch:  4, iter:   1,600, lr:(7.705e-06,)] [eta: 0:11:34, time (data): 0.196 (0.016)] l_pix: 5.7878e-03 l_sam: 2.4185e-03 
+2026-10-23 13:45:00,271 INFO: [SDANe..][epoch:  5, iter:   1,700, lr:(7.437e-06,)] [eta: 0:11:14, time (data): 0.208 (0.030)] l_pix: 5.4939e-03 l_sam: 2.0695e-03 
+2026-10-23 13:45:20,037 INFO: [SDANe..][epoch:  5, iter:   1,800, lr:(7.160e-06,)] [eta: 0:10:52, time (data): 0.203 (0.023)] l_pix: 5.1393e-03 l_sam: 2.0646e-03 
+2026-10-23 13:45:39,810 INFO: [SDANe..][epoch:  5, iter:   1,900, lr:(6.875e-06,)] [eta: 0:10:31, time (data): 0.197 (0.017)] l_pix: 4.3365e-03 l_sam: 1.6378e-03 
+2026-10-23 13:46:00,823 INFO: [SDANe..][epoch:  6, iter:   2,000, lr:(6.583e-06,)] [eta: 0:10:11, time (data): 0.204 (0.023)] l_pix: 5.2789e-03 l_sam: 2.2475e-03 
+2026-10-23 13:46:00,823 INFO: Saving models and training states.
+2026-10-23 13:46:10,810 INFO: Validation Chikusei_eval
+	 # ssim: 0.9495	Best: 0.9495 @ 2000 iter
+	 # mpsnr: 41.6475	Best: 41.6475 @ 2000 iter
+	 # sam: 2.1817	Best: 2.1817 @ 1000 iter
+	 # ergas: 4.4218	Best: 4.4221 @ 1000 iter
+	 # CC: 0.9474	Best: 0.9474 @ 2000 iter
+
+2026-10-23 13:46:30,741 INFO: [SDANe..][epoch:  6, iter:   2,100, lr:(6.284e-06,)] [eta: 0:10:04, time (data): 0.200 (0.017)] l_pix: 4.7959e-03 l_sam: 1.9791e-03 
+2026-10-23 13:46:50,778 INFO: [SDANe..][epoch:  6, iter:   2,200, lr:(5.981e-06,)] [eta: 0:09:42, time (data): 0.200 (0.017)] l_pix: 4.5834e-03 l_sam: 1.7547e-03 
+2026-10-23 13:47:11,890 INFO: [SDANe..][epoch:  7, iter:   2,300, lr:(5.673e-06,)] [eta: 0:09:22, time (data): 0.212 (0.031)] l_pix: 5.4684e-03 l_sam: 2.2648e-03 
+2026-10-23 13:47:31,772 INFO: [SDANe..][epoch:  7, iter:   2,400, lr:(5.364e-06,)] [eta: 0:09:00, time (data): 0.205 (0.024)] l_pix: 5.2615e-03 l_sam: 2.0435e-03 
+2026-10-23 13:47:51,439 INFO: [SDANe..][epoch:  7, iter:   2,500, lr:(5.053e-06,)] [eta: 0:08:38, time (data): 0.196 (0.017)] l_pix: 5.0804e-03 l_sam: 1.9359e-03 
+2026-10-23 13:48:11,112 INFO: [SDANe..][epoch:  7, iter:   2,600, lr:(4.742e-06,)] [eta: 0:08:16, time (data): 0.197 (0.017)] l_pix: 5.8998e-03 l_sam: 2.3439e-03 
+2026-10-23 13:48:32,237 INFO: [SDANe..][epoch:  8, iter:   2,700, lr:(4.433e-06,)] [eta: 0:07:56, time (data): 0.198 (0.017)] l_pix: 5.5009e-03 l_sam: 2.2961e-03 
+2026-10-23 13:48:52,156 INFO: [SDANe..][epoch:  8, iter:   2,800, lr:(4.126e-06,)] [eta: 0:07:35, time (data): 0.199 (0.017)] l_pix: 5.8300e-03 l_sam: 2.3184e-03 
+2026-10-23 13:49:12,241 INFO: [SDANe..][epoch:  8, iter:   2,900, lr:(3.822e-06,)] [eta: 0:07:13, time (data): 0.201 (0.018)] l_pix: 5.7572e-03 l_sam: 2.2377e-03 
+2026-10-23 13:49:33,563 INFO: [SDANe..][epoch:  9, iter:   3,000, lr:(3.523e-06,)] [eta: 0:06:53, time (data): 0.207 (0.025)] l_pix: 5.1536e-03 l_sam: 2.0178e-03 
+2026-10-23 13:49:33,563 INFO: Saving models and training states.
+2026-10-23 13:49:43,300 INFO: Validation Chikusei_eval
+	 # ssim: 0.9495	Best: 0.9495 @ 3000 iter
+	 # mpsnr: 41.6479	Best: 41.6479 @ 3000 iter
+	 # sam: 2.1813	Best: 2.1817 @ 1000 iter
+	 # ergas: 4.4211	Best: 4.4221 @ 1000 iter
+	 # CC: 0.9474	Best: 0.9474 @ 3000 iter
+
+2026-10-23 13:50:03,189 INFO: [SDANe..][epoch:  9, iter:   3,100, lr:(3.231e-06,)] [eta: 0:06:38, time (data): 0.199 (0.020)] l_pix: 4.6575e-03 l_sam: 1.7945e-03 
+2026-10-23 13:50:23,202 INFO: [SDANe..][epoch:  9, iter:   3,200, lr:(2.945e-06,)] [eta: 0:06:16, time (data): 0.200 (0.020)] l_pix: 4.8953e-03 l_sam: 2.0036e-03 
+2026-10-23 13:50:44,467 INFO: [SDANe..][epoch: 10, iter:   3,300, lr:(2.668e-06,)] [eta: 0:05:56, time (data): 0.215 (0.034)] l_pix: 5.4681e-03 l_sam: 2.3128e-03 
+2026-10-23 13:51:04,742 INFO: [SDANe..][epoch: 10, iter:   3,400, lr:(2.400e-06,)] [eta: 0:05:34, time (data): 0.208 (0.026)] l_pix: 4.0791e-03 l_sam: 1.6444e-03 
+2026-10-23 13:51:25,012 INFO: [SDANe..][epoch: 10, iter:   3,500, lr:(2.143e-06,)] [eta: 0:05:13, time (data): 0.202 (0.020)] l_pix: 4.0892e-03 l_sam: 1.6978e-03 
+2026-10-23 13:51:46,410 INFO: [SDANe..][epoch: 11, iter:   3,600, lr:(1.897e-06,)] [eta: 0:04:52, time (data): 0.209 (0.027)] l_pix: 4.6135e-03 l_sam: 1.8404e-03 
+2026-10-23 13:52:06,380 INFO: [SDANe..][epoch: 11, iter:   3,700, lr:(1.664e-06,)] [eta: 0:04:31, time (data): 0.200 (0.018)] l_pix: 4.8795e-03 l_sam: 1.9045e-03 
+2026-10-23 13:52:26,511 INFO: [SDANe..][epoch: 11, iter:   3,800, lr:(1.444e-06,)] [eta: 0:04:10, time (data): 0.201 (0.019)] l_pix: 4.7528e-03 l_sam: 1.9208e-03 
+2026-10-23 13:52:46,278 INFO: [SDANe..][epoch: 11, iter:   3,900, lr:(1.238e-06,)] [eta: 0:03:49, time (data): 0.197 (0.018)] l_pix: 5.6969e-03 l_sam: 2.1977e-03 
+2026-10-23 13:53:07,432 INFO: [SDANe..][epoch: 12, iter:   4,000, lr:(1.047e-06,)] [eta: 0:03:28, time (data): 0.205 (0.025)] l_pix: 4.3119e-03 l_sam: 1.7754e-03 
+2026-10-23 13:53:07,432 INFO: Saving models and training states.
+2026-10-23 13:53:17,383 INFO: Validation Chikusei_eval
+	 # ssim: 0.9495	Best: 0.9495 @ 4000 iter
+	 # mpsnr: 41.6479	Best: 41.6479 @ 4000 iter
+	 # sam: 2.1809	Best: 2.1817 @ 1000 iter
+	 # ergas: 4.4213	Best: 4.4221 @ 1000 iter
+	 # CC: 0.9475	Best: 0.9475 @ 4000 iter
+
+2026-10-23 13:53:37,503 INFO: [SDANe..][epoch: 12, iter:   4,100, lr:(8.722e-07,)] [eta: 0:03:09, time (data): 0.202 (0.019)] l_pix: 5.2608e-03 l_sam: 2.0575e-03 
+2026-10-23 13:53:57,698 INFO: [SDANe..][epoch: 12, iter:   4,200, lr:(7.138e-07,)] [eta: 0:02:48, time (data): 0.202 (0.019)] l_pix: 5.5191e-03 l_sam: 2.1975e-03 
+2026-10-23 13:54:19,042 INFO: [SDANe..][epoch: 13, iter:   4,300, lr:(5.724e-07,)] [eta: 0:02:27, time (data): 0.217 (0.034)] l_pix: 5.1675e-03 l_sam: 2.0619e-03 
+2026-10-23 13:54:39,250 INFO: [SDANe..][epoch: 13, iter:   4,400, lr:(4.488e-07,)] [eta: 0:02:06, time (data): 0.209 (0.026)] l_pix: 4.9475e-03 l_sam: 2.0027e-03 
+2026-10-23 13:54:59,202 INFO: [SDANe..][epoch: 13, iter:   4,500, lr:(3.432e-07,)] [eta: 0:01:44, time (data): 0.199 (0.019)] l_pix: 4.6459e-03 l_sam: 1.8072e-03 
+2026-10-23 13:55:20,665 INFO: [SDANe..][epoch: 14, iter:   4,600, lr:(2.563e-07,)] [eta: 0:01:23, time (data): 0.208 (0.026)] l_pix: 4.5593e-03 l_sam: 1.8367e-03 
+2026-10-23 13:55:40,632 INFO: [SDANe..][epoch: 14, iter:   4,700, lr:(1.883e-07,)] [eta: 0:01:02, time (data): 0.198 (0.019)] l_pix: 5.1776e-03 l_sam: 2.0648e-03 
+2026-10-23 13:56:00,404 INFO: [SDANe..][epoch: 14, iter:   4,800, lr:(1.394e-07,)] [eta: 0:00:41, time (data): 0.198 (0.019)] l_pix: 4.4943e-03 l_sam: 1.8335e-03 
+2026-10-23 13:56:21,305 INFO: [SDANe..][epoch: 15, iter:   4,900, lr:(1.100e-07,)] [eta: 0:00:20, time (data): 0.212 (0.034)] l_pix: 5.2138e-03 l_sam: 2.1318e-03 
+2026-10-23 13:56:40,980 INFO: [SDANe..][epoch: 15, iter:   5,000, lr:(1.000e-07,)] [eta: 0:00:00, time (data): 0.204 (0.025)] l_pix: 5.4464e-03 l_sam: 2.1933e-03 
+2026-10-23 13:56:40,980 INFO: Saving models and training states.
+2026-10-23 13:56:50,785 INFO: Validation Chikusei_eval
+	 # ssim: 0.9495	Best: 0.9495 @ 4000 iter
+	 # mpsnr: 41.6487	Best: 41.6487 @ 5000 iter
+	 # sam: 2.1811	Best: 2.1817 @ 1000 iter
+	 # ergas: 4.4207	Best: 4.4221 @ 1000 iter
+	 # CC: 0.9475	Best: 0.9475 @ 5000 iter
+
+2026-10-23 13:56:52,020 INFO: End of training. Time consumed: 0:17:45
+2026-10-23 13:56:52,020 INFO: Save the latest model.
+2026-10-23 13:57:02,079 INFO: Validation Chikusei_eval
+	 # ssim: 0.9495	Best: 0.9495 @ 4000 iter
+	 # mpsnr: 41.6487	Best: 41.6487 @ 5002 iter
+	 # sam: 2.1811	Best: 2.1817 @ 1000 iter
+	 # ergas: 4.4207	Best: 4.4221 @ 1000 iter
+	 # CC: 0.9475	Best: 0.9475 @ 5002 iter
+

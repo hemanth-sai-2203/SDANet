@@ -187,3 +187,49 @@ class SDANET_SADS(SDANET):
             )
             for i in range(n_group)
         ])
+        
+class HSI_UpsamplerIndependent(nn.Module):
+    """Two independent pixel-shuffle stages for x4 HSI reconstruction."""
+
+    def __init__(self, n_feats, scale):
+        super().__init__()
+        self.scale = scale
+
+        self.path1_ps = nn.Sequential(
+            nn.Conv2d(n_feats, n_feats * 4, 3, padding=1),
+            nn.PixelShuffle(2),
+            nn.GELU(),
+        )
+
+        self.path2_ps = nn.Sequential(
+            nn.Conv2d(n_feats, n_feats * 4, 3, padding=1),
+            nn.PixelShuffle(2),
+            nn.GELU(),
+        )
+
+        # Retain these modules for checkpoint-key compatibility.
+        self.path2_interp = nn.Sequential(
+            nn.Upsample(scale_factor=2, mode="bicubic", align_corners=False),
+            nn.Conv2d(n_feats, n_feats, 3, padding=1),
+        )
+        self.fusion = nn.Conv2d(n_feats * 2, n_feats, 1)
+
+    def forward(self, x):
+        if self.scale == 4:
+            x = self.path1_ps(x)
+            x = self.path2_ps(x)
+            return x
+
+        raise ValueError(
+            f"HSI_UpsamplerIndependent supports scale=4, got {self.scale}"
+        )
+@ARCH_REGISTRY.register()
+class SDANET_SADS_IndUp(SDANET_SADS):
+    """Regional SADS with independently parameterized x4 upsampling."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.upsampler = HSI_UpsamplerIndependent(
+            n_feats=kwargs.get("n_feats", 128),
+            scale=kwargs.get("scale", 4),
+        )

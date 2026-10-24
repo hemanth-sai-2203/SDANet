@@ -116,7 +116,7 @@ val:
       crop_border: 0
 
     CC:
-      type: calculate_corr_hsi
+      type: calculate_corr_hsi 
       crop_border: 0
 
 # ============================================================

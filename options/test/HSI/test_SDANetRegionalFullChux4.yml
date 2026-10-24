@@ -27,7 +27,7 @@ network_g:
   ste_mask_tau: 0.15
 
 path:
-  pretrain_network_g: /home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANetRegionalFull_spatial_split/models/net_g_33000.pth
+  pretrain_network_g: /home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANetRegionalContinue66K_spatial_split/models/net_g_66000.pth
   strict_load_g: true
   param_key_g: params_ema
 
