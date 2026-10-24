@@ -274,7 +274,10 @@ class BaseModel():
                                    f'{crt_net[k].shape}; load_net: {load_net[k].shape}')
                     load_net[k + '.ignore'] = load_net.pop(k)
 
-    def load_network(self, net, load_path, strict=True, param_key='params'):
+    def load_network(
+        self, net, load_path, strict=True, param_key='params',
+        allowed_missing_keys=None
+    ):
         """Load network.
 
         Args:
@@ -299,8 +302,32 @@ class BaseModel():
             if k.startswith('module.'):
                 load_net[k[7:]] = v
                 load_net.pop(k)
-        self._print_different_keys_loading(net, load_net, strict)
-        net.load_state_dict(load_net, strict=strict)
+        if allowed_missing_keys is None:
+            self._print_different_keys_loading(net, load_net, strict)
+            net.load_state_dict(load_net, strict=strict)
+            return
+
+        expected_missing = set(allowed_missing_keys)
+        current_keys = set(net.state_dict())
+        loaded_keys = set(load_net)
+        actual_missing = current_keys - loaded_keys
+        unexpected = loaded_keys - current_keys
+        if actual_missing != expected_missing or unexpected:
+            raise RuntimeError(
+                'Checkpoint key mismatch with allowlist: '
+                f'missing={sorted(actual_missing)}, '
+                f'expected_missing={sorted(expected_missing)}, '
+                f'unexpected={sorted(unexpected)}'
+            )
+
+        for key in current_keys & loaded_keys:
+            if net.state_dict()[key].shape != load_net[key].shape:
+                raise RuntimeError(
+                    f'Checkpoint tensor shape mismatch for {key}: '
+                    f'model={tuple(net.state_dict()[key].shape)}, '
+                    f'checkpoint={tuple(load_net[key].shape)}'
+                )
+        net.load_state_dict(load_net, strict=False)
 
     @master_only
     def save_training_state(self, epoch, current_iter):
