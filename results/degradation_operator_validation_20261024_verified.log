@@ -1,0 +1,16 @@
+SDANet differentiable degradation validation
+timestamp=2026-10-24T11:26:23.587780+05:30
+data=/home/aidslab/hemanth-ug4/datasets/Chikusei_x4_sspsr_spatial_split/Chikusei_test.mat
+device=cuda
+reference=basicsr.utils.img_util.imresize_np, scale=0.25, antialiasing=True
+input=stored float32 GT; comparison=stored float32 ms; no model loaded
+gt_shape=(4, 512, 512, 128); lr_shape=(4, 128, 128, 128)
+scene_1: max_abs=1.1920929e-07, mean_abs=5.28869476e-09, rmse=8.83511689e-09
+scene_2: max_abs=1.1920929e-07, mean_abs=5.67128851e-09, rmse=1.01238977e-08
+scene_3: max_abs=1.1920929e-07, mean_abs=5.64275032e-09, rmse=9.9138477e-09
+scene_4: max_abs=8.94069672e-08, mean_abs=5.73845338e-09, rmse=1.01018467e-08
+aggregate_all_pixels: max_abs=1.1920929e-07, mean_abs=5.58529674e-09, rmse=9.75812839e-09
+gradient_test: output_shape=(1, 3, 6, 7), requires_grad=True, finite=True, nonzero=2016/2016, grad_l1=0.984881997, grad_max_abs=0.000704591337, loss=0.24627085
+boundary_test: output_shape=(5, 7, 1), max_abs=2.98023224e-08, mean_abs=3.75189951e-09, rmse=8.219944e-09
+tolerance=1e-5 for scene and boundary max_abs error
+overall_status=PASS
