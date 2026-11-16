@@ -1,0 +1,243 @@
+{
+  "title": "Matched 66K spatial and spectral diagnostics",
+  "created_at_utc": "2026-11-16T12:19:47.704249+00:00",
+  "ground_truth_path": "/home/aidslab/hemanth-ug4/datasets/Chikusei_x4_sspsr_spatial_split/Chikusei_test.mat",
+  "ground_truth_sha256": "7a727389d88927c1525e7a5e8bb54493927a0742e51a32c0e4898d587b3ed224",
+  "ground_truth_shape": [
+    4,
+    512,
+    512,
+    128
+  ],
+  "tile_count": 4,
+  "band_count": 128,
+  "band_indexing": "Zero-based 0..127; wavelength mapping not assumed.",
+  "spatial_metric_definition": "Per-pixel MSE/RMSE averaged over the 128 spectral bands.",
+  "regional_improvement_definition": "(Global error - Regional error) / Global error * 100; positive favors Regional.",
+  "window_analysis": {
+    "window_size": 64,
+    "stride": 32,
+    "windows_per_tile": 225,
+    "total_windows": 900,
+    "windows_with_regional_lower_mse": 389,
+    "windows_with_global_lower_mse": 511
+  },
+  "spatial_summary": [
+    {
+      "tile": 0,
+      "global_mean_pixel_rmse": 0.010398377082398397,
+      "regional_mean_pixel_rmse": 0.010400625093286707,
+      "global_pixel_mse": 0.00022648740173163273,
+      "regional_pixel_mse": 0.00022680186607835123,
+      "regional_mse_improvement_pct": -0.13884407888219563,
+      "regional_pixel_win_rate_pct": 49.96833801269531,
+      "improvement_map_p02_pct": -79.19318663924258,
+      "improvement_map_median_pct": -0.011041645623554277,
+      "improvement_map_p98_pct": 44.065851092047616
+    },
+    {
+      "tile": 1,
+      "global_mean_pixel_rmse": 0.007930154082901722,
+      "regional_mean_pixel_rmse": 0.00792576351103442,
+      "global_pixel_mse": 0.00013093145379564525,
+      "regional_pixel_mse": 0.00013048542814581072,
+      "regional_mse_improvement_pct": 0.34065584464575843,
+      "regional_pixel_win_rate_pct": 49.43504333496094,
+      "improvement_map_p02_pct": -65.63201563221783,
+      "improvement_map_median_pct": -0.16205677793527987,
+      "improvement_map_p98_pct": 39.74555796989114
+    },
+    {
+      "tile": 2,
+      "global_mean_pixel_rmse": 0.006502987601314397,
+      "regional_mean_pixel_rmse": 0.006517357943841922,
+      "global_pixel_mse": 8.765399080399058e-05,
+      "regional_pixel_mse": 8.796680336966416e-05,
+      "regional_mse_improvement_pct": -0.356872017810442,
+      "regional_pixel_win_rate_pct": 48.90251159667969,
+      "improvement_map_p02_pct": -55.67579930707727,
+      "improvement_map_median_pct": -0.26027697511082015,
+      "improvement_map_p98_pct": 34.75071103712498
+    },
+    {
+      "tile": 3,
+      "global_mean_pixel_rmse": 0.007079761489303766,
+      "regional_mean_pixel_rmse": 0.007081983303656975,
+      "global_pixel_mse": 0.0001002986561406648,
+      "regional_pixel_mse": 0.00010033163641152057,
+      "regional_mse_improvement_pct": -0.032882066544855704,
+      "regional_pixel_win_rate_pct": 49.75471496582031,
+      "improvement_map_p02_pct": -51.95334780323726,
+      "improvement_map_median_pct": -0.05274734733754326,
+      "improvement_map_p98_pct": 33.775724897906244
+    }
+  ],
+  "input_predictions": [
+    {
+      "tile": 0,
+      "model": "GLOBAL",
+      "path": "/home/aidslab/hemanth-ug4/SDANet_repo/results/SDANetGlobalMatched66K_Chikusei_x4_test/visualization/Chikusei_test/test_img_0_SDANetGlobalMatched66K_Chikusei_x4_test.mat",
+      "size_bytes": 134217928,
+      "sha256": "1544270f431c816e09521e0df88b52d0ffe3f56b76f8f92077f9f29bf30d8379"
+    },
+    {
+      "tile": 0,
+      "model": "REGIONAL",
+      "path": "/home/aidslab/hemanth-ug4/SDANet_repo/results/SDANetRegionalMatched66K_Chikusei_x4_test/visualization/Chikusei_test/test_img_0_SDANetRegionalMatched66K_Chikusei_x4_test.mat",
+      "size_bytes": 134217928,
+      "sha256": "642321e9729c1a00ca9d257cfb291db3da9ad79b5f097236a545233e06d319a1"
+    },
+    {
+      "tile": 1,
+      "model": "GLOBAL",
+      "path": "/home/aidslab/hemanth-ug4/SDANet_repo/results/SDANetGlobalMatched66K_Chikusei_x4_test/visualization/Chikusei_test/test_img_1_SDANetGlobalMatched66K_Chikusei_x4_test.mat",
+      "size_bytes": 134217928,
+      "sha256": "4ec65ffede6563c55ab88513dcd4e74f950cdb21357f085d1713492783355b71"
+    },
+    {
+      "tile": 1,
+      "model": "REGIONAL",
+      "path": "/home/aidslab/hemanth-ug4/SDANet_repo/results/SDANetRegionalMatched66K_Chikusei_x4_test/visualization/Chikusei_test/test_img_1_SDANetRegionalMatched66K_Chikusei_x4_test.mat",
+      "size_bytes": 134217928,
+      "sha256": "cd60417f7edaf3214ddd3b2427f6cfc0c2bae1fa24e58dae2dad6df13a68aaab"
+    },
+    {
+      "tile": 2,
+      "model": "GLOBAL",
+      "path": "/home/aidslab/hemanth-ug4/SDANet_repo/results/SDANetGlobalMatched66K_Chikusei_x4_test/visualization/Chikusei_test/test_img_2_SDANetGlobalMatched66K_Chikusei_x4_test.mat",
+      "size_bytes": 134217928,
+      "sha256": "3ae728b0a0b4e06e15b68d94ca197bdf1f7b7d3a0b13b95b8c4576fd515e2d30"
+    },
+    {
+      "tile": 2,
+      "model": "REGIONAL",
+      "path": "/home/aidslab/hemanth-ug4/SDANet_repo/results/SDANetRegionalMatched66K_Chikusei_x4_test/visualization/Chikusei_test/test_img_2_SDANetRegionalMatched66K_Chikusei_x4_test.mat",
+      "size_bytes": 134217928,
+      "sha256": "185a6bb0d40f57f46d82dc8f14fabc15fe62e36600704a0f06b356125bd4e760"
+    },
+    {
+      "tile": 3,
+      "model": "GLOBAL",
+      "path": "/home/aidslab/hemanth-ug4/SDANet_repo/results/SDANetGlobalMatched66K_Chikusei_x4_test/visualization/Chikusei_test/test_img_3_SDANetGlobalMatched66K_Chikusei_x4_test.mat",
+      "size_bytes": 134217928,
+      "sha256": "e54a2a22e0d35499ed39405ebe5ba184f729c484f050a3dcb1acbf38224f13dd"
+    },
+    {
+      "tile": 3,
+      "model": "REGIONAL",
+      "path": "/home/aidslab/hemanth-ug4/SDANet_repo/results/SDANetRegionalMatched66K_Chikusei_x4_test/visualization/Chikusei_test/test_img_3_SDANetRegionalMatched66K_Chikusei_x4_test.mat",
+      "size_bytes": 134217928,
+      "sha256": "076e0e8824a279ddfd3b7f9e60d619604e844c4867b8f7fe555b5f1a1ea9cb29"
+    }
+  ],
+  "top_5_regional_windows": [
+    {
+      "tile": 1,
+      "top": 352,
+      "left": 256,
+      "height": 64,
+      "width": 64,
+      "global_mse": 0.0001680551430700061,
+      "regional_mse": 0.00014829471736232318,
+      "regional_mse_improvement_pct": 11.758298702855766
+    },
+    {
+      "tile": 1,
+      "top": 352,
+      "left": 224,
+      "height": 64,
+      "width": 64,
+      "global_mse": 0.0002196970697918648,
+      "regional_mse": 0.00020053126376087137,
+      "regional_mse_improvement_pct": 8.7237422188428
+    },
+    {
+      "tile": 1,
+      "top": 320,
+      "left": 256,
+      "height": 64,
+      "width": 64,
+      "global_mse": 0.0002116699927797903,
+      "regional_mse": 0.00019740744304864595,
+      "regional_mse_improvement_pct": 6.738106589337074
+    },
+    {
+      "tile": 1,
+      "top": 384,
+      "left": 256,
+      "height": 64,
+      "width": 64,
+      "global_mse": 0.00013979180962365735,
+      "regional_mse": 0.00013106723549549643,
+      "regional_mse_improvement_pct": 6.241119670493506
+    },
+    {
+      "tile": 1,
+      "top": 384,
+      "left": 224,
+      "height": 64,
+      "width": 64,
+      "global_mse": 0.00015716951688523446,
+      "regional_mse": 0.00014762666443948112,
+      "regional_mse_improvement_pct": 6.0716942030950865
+    }
+  ],
+  "top_5_global_windows": [
+    {
+      "tile": 1,
+      "top": 256,
+      "left": 416,
+      "height": 64,
+      "width": 64,
+      "global_mse": 1.817064517205041e-05,
+      "regional_mse": 1.999671313075672e-05,
+      "regional_mse_improvement_pct": -10.049549377119071
+    },
+    {
+      "tile": 1,
+      "top": 320,
+      "left": 352,
+      "height": 64,
+      "width": 64,
+      "global_mse": 6.176804037338264e-05,
+      "regional_mse": 6.59125986869078e-05,
+      "regional_mse_improvement_pct": -6.709875023509985
+    },
+    {
+      "tile": 0,
+      "top": 0,
+      "left": 32,
+      "height": 64,
+      "width": 64,
+      "global_mse": 2.120384966057819e-05,
+      "regional_mse": 2.256523266688863e-05,
+      "regional_mse_improvement_pct": -6.420452078763312
+    },
+    {
+      "tile": 3,
+      "top": 160,
+      "left": 352,
+      "height": 64,
+      "width": 64,
+      "global_mse": 3.89878226314926e-05,
+      "regional_mse": 4.145967003803373e-05,
+      "regional_mse_improvement_pct": -6.340049891743586
+    },
+    {
+      "tile": 1,
+      "top": 288,
+      "left": 352,
+      "height": 64,
+      "width": 64,
+      "global_mse": 0.0001211290920666719,
+      "regional_mse": 0.00012818354290170908,
+      "regional_mse_improvement_pct": -5.823911262501884
+    }
+  ],
+  "interpretation_cautions": [
+    "The four test tiles are spatial regions from one Chikusei scene, not independent scenes.",
+    "The 128 bands are indexed only; this script does not assume wavelengths.",
+    "Sliding windows overlap and are exploratory diagnostics, not independent statistical samples.",
+    "Color-map percentile limits are for visualization; saved NPZ arrays retain unclipped values."
+  ]
+}

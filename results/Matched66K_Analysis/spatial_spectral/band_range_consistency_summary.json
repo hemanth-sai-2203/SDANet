@@ -1,0 +1,91 @@
+{
+  "generated_utc": "2026-11-16T12:27:38.622828+00:00",
+  "analysis": "matched_66k_spectral_band_range_consistency",
+  "inputs": {
+    "tile_band_metrics.csv": {
+      "sha256": "3d88500bfaa8e0d0b11903eb8f056ee95023868a81745cf9a60c2e1a9403d4db",
+      "rows": 1024
+    },
+    "mean_band_metrics.csv": {
+      "sha256": "15d627a690372aab4d7c9d9d5cb6cb149a5a088a0c805a05e85e244bd1c8744a",
+      "rows": 128
+    }
+  },
+  "definitions": {
+    "improvement_pct": "(global_error - regional_error) / global_error * 100; positive favours Regional",
+    "aggregate_per_band": "arithmetic mean across four equal-sized tiles",
+    "band_indexing": "zero-based 0 through 127; wavelength metadata not assumed",
+    "focus_ranges": "post-hoc exploratory ranges, not confirmatory tests"
+  },
+  "aggregate_rmse": {
+    "regional_better_bands": 32,
+    "global_better_bands": 96,
+    "mean_improvement_pct": -0.0125798922464089,
+    "median_improvement_pct": -0.01258030715253418
+  },
+  "aggregate_mae": {
+    "regional_better_bands": 9,
+    "global_better_bands": 119,
+    "mean_improvement_pct": -0.042972515787776874,
+    "median_improvement_pct": -0.043843733507388155
+  },
+  "per_band_tile_vote_counts_rmse": {
+    "regional_3_or_4": 47,
+    "global_3_or_4": 59,
+    "mixed": 22
+  },
+  "tile_rmse_band_wins": {
+    "0": 48,
+    "1": 128,
+    "2": 0,
+    "3": 68
+  },
+  "focus_ranges": [
+    {
+      "start_band": 19,
+      "end_band": 27,
+      "length_bands": 9,
+      "mean_aggregate_rmse_improvement_pct": 0.01855877734787867,
+      "median_aggregate_rmse_improvement_pct": 0.019326341033064173,
+      "regional_aggregate_rmse_better_bands": 9,
+      "global_aggregate_rmse_better_bands": 0,
+      "mean_tile_rmse_improvement_pct": 0.016609974314495526,
+      "mean_tile_mae_improvement_pct": -0.05941026077353424,
+      "tile_0_mean_rmse_improvement_pct": 0.035857805732215066,
+      "tile_0_regional_rmse_win_bands": 9,
+      "tile_1_mean_rmse_improvement_pct": 0.07864445359376933,
+      "tile_1_regional_rmse_win_bands": 9,
+      "tile_2_mean_rmse_improvement_pct": -0.4018079639777333,
+      "tile_2_regional_rmse_win_bands": 0,
+      "tile_3_mean_rmse_improvement_pct": 0.35374560190973103,
+      "tile_3_regional_rmse_win_bands": 9,
+      "interpretation_note": "exploratory_posthoc_range"
+    },
+    {
+      "start_band": 80,
+      "end_band": 93,
+      "length_bands": 14,
+      "mean_aggregate_rmse_improvement_pct": -0.04041721005818637,
+      "median_aggregate_rmse_improvement_pct": -0.04031761976754457,
+      "regional_aggregate_rmse_better_bands": 0,
+      "global_aggregate_rmse_better_bands": 14,
+      "mean_tile_rmse_improvement_pct": -0.04233004547935449,
+      "mean_tile_mae_improvement_pct": -0.08976103910740035,
+      "tile_0_mean_rmse_improvement_pct": -0.12978129615964096,
+      "tile_0_regional_rmse_win_bands": 0,
+      "tile_1_mean_rmse_improvement_pct": 0.18269296409149344,
+      "tile_1_regional_rmse_win_bands": 14,
+      "tile_2_mean_rmse_improvement_pct": -0.14365400119614985,
+      "tile_2_regional_rmse_win_bands": 0,
+      "tile_3_mean_rmse_improvement_pct": -0.0785778486531206,
+      "tile_3_regional_rmse_win_bands": 0,
+      "interpretation_note": "exploratory_posthoc_range"
+    }
+  ],
+  "validation": {
+    "tile_records_expected": 1024,
+    "tile_records_read": 1024,
+    "mean_file_rows": 128,
+    "aggregate_file_consistency": "passed"
+  }
+}

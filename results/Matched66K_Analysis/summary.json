@@ -1,0 +1,90 @@
+{
+  "title": "Matched 66K Global SDANet vs Regional SADS evaluation",
+  "created_at_utc": "2026-11-16T12:14:32.817854+00:00",
+  "dataset": "/home/aidslab/hemanth-ug4/datasets/Chikusei_x4_sspsr_spatial_split/Chikusei_test.mat",
+  "dataset_shape": [
+    4,
+    512,
+    512,
+    128
+  ],
+  "tile_count": 4,
+  "tile_shape": [
+    512,
+    512,
+    128
+  ],
+  "inference_weights": "params_ema",
+  "metric_aggregation": "Arithmetic mean of the four equally sized test tiles",
+  "models": {
+    "GLOBAL": {
+      "name": "Global SDANet",
+      "architecture": "SDANET",
+      "parameter_count": 3086272,
+      "checkpoint": "/home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANetGlobalMatchedContinue66K_spatial_split/models/net_g_66000.pth",
+      "checkpoint_sha256": "908d567e1cce6b17e81a13ce93837de33b49ec18a1efc7108108326e18169fd8",
+      "aggregate_metrics": {
+        "SSIM": 0.9440142758321353,
+        "MPSNR": 40.3146499110059,
+        "SAM": 2.3110660625775408,
+        "ERGAS": 4.966978529280096,
+        "CC": 0.9562024623155594,
+        "MSE": 0.00013634287561798336,
+        "MAE": 0.006457574650481744
+      }
+    },
+    "REGIONAL": {
+      "name": "Regional SADS",
+      "architecture": "SDANET_SADS",
+      "parameter_count": 3086272,
+      "checkpoint": "/home/aidslab/hemanth-ug4/SDANet_repo/experiments/SDANetRegionalContinue66K_spatial_split/models/net_g_66000.pth",
+      "checkpoint_sha256": "abec6eb7d4aba24257e3eaffc39279f919d2ed4fe8de6eddcd247be2662c322a",
+      "aggregate_metrics": {
+        "SSIM": 0.9439837753734882,
+        "MPSNR": 40.313354636569706,
+        "SAM": 2.3117169582611017,
+        "ERGAS": 4.967363770986273,
+        "CC": 0.9561763107776642,
+        "MSE": 0.0001363964335013368,
+        "MAE": 0.00646068244024632
+      }
+    }
+  },
+  "regional_minus_global_aggregate": {
+    "SSIM": -3.050045864705364e-05,
+    "MPSNR": -0.0012952744361953705,
+    "SAM": 0.0006508956835609148,
+    "ERGAS": 0.0003852417061764868,
+    "CC": -2.6151537895202637e-05,
+    "MSE": 5.3557883353440175e-08,
+    "MAE": 3.1077897645762423e-06
+  },
+  "quadrant_analysis": {
+    "quadrants_where_regional_mse_is_lower": 5,
+    "quadrants_where_global_mse_is_lower": 11,
+    "quadrant_ties": 0,
+    "total_quadrants": 16,
+    "unweighted_mean_regional_mse_improvement_pct": -0.06473235930612414,
+    "pixel_win_rate_definition": "Percentage of spatial pixels where Regional has lower mean-squared error across the 128 spectral bands than Global."
+  },
+  "metric_directions": {
+    "SSIM": "higher",
+    "MPSNR": "higher",
+    "SAM": "lower",
+    "ERGAS": "lower",
+    "CC": "higher",
+    "MSE": "lower",
+    "MAE": "lower"
+  },
+  "caveats": [
+    "The four test tiles are spatial regions from one Chikusei scene, not four independent scenes.",
+    "Small metric differences are descriptive and are not evidence of statistical significance.",
+    "Quadrant-level MSE is a spatial diagnostic; it is not a separate model evaluation set."
+  ],
+  "software": {
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "platform": "Linux-6.17.0-1033-oem-x86_64-with-glibc2.39",
+    "numpy": "1.26.4",
+    "scipy": "1.17.1"
+  }
+}
