@@ -1,0 +1,76 @@
+diff --git a/basicsr/test.py b/basicsr/test.py
+--- a/basicsr/test.py
++++ b/basicsr/test.py
+@@ -15,2 +15,11 @@ def test_pipeline(root_path):
+-    torch.backends.cudnn.benchmark = True
+-    # torch.backends.cudnn.deterministic = True
++    # Keep the historical defaults unless a test config explicitly requests
++    # a controlled backend. This lets old configs retain their previous behavior.
++    backend_opt = opt.get('test_backend', {})
++    torch.backends.cudnn.benchmark = bool(backend_opt.get('cudnn_benchmark', True))
++    torch.backends.cudnn.deterministic = bool(backend_opt.get('cudnn_deterministic', False))
++    if 'cudnn_allow_tf32' in backend_opt:
++        torch.backends.cudnn.allow_tf32 = bool(backend_opt['cudnn_allow_tf32'])
++    if 'cuda_matmul_allow_tf32' in backend_opt:
++        torch.backends.cuda.matmul.allow_tf32 = bool(backend_opt['cuda_matmul_allow_tf32'])
++    if 'float32_matmul_precision' in backend_opt:
++        torch.set_float32_matmul_precision(backend_opt['float32_matmul_precision'])
+@@ -21,3 +30,11 @@ def test_pipeline(root_path):
+     logger = get_root_logger(logger_name='basicsr', log_level=logging.INFO, log_file=log_file)
+     logger.info(get_env_info())
+     logger.info(dict2str(opt))
++    logger.info(
++        'Test backend: '
++        f"cudnn.benchmark={torch.backends.cudnn.benchmark}, "
++        f"cudnn.deterministic={torch.backends.cudnn.deterministic}, "
++        f"cudnn.allow_tf32={torch.backends.cudnn.allow_tf32}, "
++        f"cuda.matmul.allow_tf32={torch.backends.cuda.matmul.allow_tf32}, "
++        f"float32_matmul_precision={torch.get_float32_matmul_precision()}"
++    )
+diff --git a/basicsr/models/sr_model.py b/basicsr/models/sr_model.py
+--- a/basicsr/models/sr_model.py
++++ b/basicsr/models/sr_model.py
+@@ -1,2 +1,4 @@
+ import torch
++import csv
++from datetime import datetime
+ from collections import OrderedDict
+@@ -520,1 +522,2 @@ class SRModel(BaseModel):
+-        metric_data = dict()
++        metric_data = dict()
++        per_image_rows = []
+@@ -570,4 +573,9 @@ class SRModel(BaseModel):
+             if with_metrics:
+-                # calculate metrics
++                # Calculate and retain metrics for this individual scene.
++                image_metrics = {}
+                 for name, opt_ in self.opt['val']['metrics'].items():
+-                    self.metric_results[name] += calculate_metric(metric_data, opt_)
++                    value = float(calculate_metric(metric_data, opt_))
++                    self.metric_results[name] += value
++                    image_metrics[name] = value
++                if self.opt['val'].get('save_per_image_metrics', False):
++                    per_image_rows.append({'image': img_name, **image_metrics})
+@@ -595,1 +603,20 @@ class SRModel(BaseModel):
+             self._log_validation_metric_values(current_iter, dataset_name, tb_logger)
++            if self.opt['val'].get('save_per_image_metrics', False):
++                if not per_image_rows:
++                    raise RuntimeError(
++                        'Per-scene metrics were requested, but no per-scene rows were collected.'
++                    )
++                output_dir = self.opt['path'].get('results_root') or self.opt['path'].get('log')
++                if not output_dir:
++                    raise KeyError('A results_root or log directory is required to save per-scene metrics.')
++                os.makedirs(output_dir, exist_ok=True)
++                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
++                csv_path = osp.join(
++                    output_dir,
++                    f'{dataset_name}_per_scene_metrics_{timestamp}.csv'
++                )
++                fieldnames = ['image', *self.opt['val']['metrics'].keys()]
++                with open(csv_path, 'w', newline='', encoding='utf-8') as csv_file:
++                    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
++                    writer.writeheader()
++                    writer.writerows(per_image_rows)
++                get_root_logger().info(f'Per-scene metrics saved to: {csv_path}')
+*** End Patch
