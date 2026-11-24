@@ -156,9 +156,9 @@ def main() -> int:
         sam_max = max(float(np.percentile(all_sam, 99.5)), 1e-12)
 
         fig, axes = plt.subplots(
-            nrows=len(RUNS) + 1,
+            nrows=len(scene_predictions) + 1,
             ncols=3,
-            figsize=(15, 3.1 * (len(RUNS) + 1)),
+            figsize=(15, 2.8 * (len(scene_predictions) + 1)),
             constrained_layout=True,
         )
         column_titles = [
@@ -167,12 +167,14 @@ def main() -> int:
             "Per-pixel spectral angle (degrees)",
         ]
         for col, title in enumerate(column_titles):
-            axes[0, col].set_title(title, fontsize=11)
+            fig.text((col + 0.5) / 3.0, 0.97, title, ha="center", va="bottom", fontsize=11)
 
         axes[0, 0].imshow(colour_gt)
         axes[0, 0].set_ylabel("Ground truth", fontsize=10)
-        axes[0, 1].axis("off")
-        axes[0, 2].axis("off")
+        zero_mae = np.zeros_like(mae_maps[next(iter(mae_maps))])
+        zero_sam = np.zeros_like(sam_maps[next(iter(sam_maps))])
+        mae_gt_image = axes[0, 1].imshow(zero_mae, cmap="magma", vmin=0.0, vmax=mae_max)
+        sam_gt_image = axes[0, 2].imshow(zero_sam, cmap="viridis", vmin=0.0, vmax=sam_max)
 
         for row_index, (label, prediction) in enumerate(scene_predictions.items(), start=1):
             axes[row_index, 0].imshow(false_colour(prediction, bands, limits))

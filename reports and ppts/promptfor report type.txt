@@ -1,0 +1,271 @@
+Dr. Sankararao’s instruction—"Complete report from starting, kind of small thesis"—means you should not staple two separate semester reports together. Instead, frame your entire two-semester journey as a single, cohesive scientific narrative: Foundations (Sem 1) → Generative Diffusion Exploration & Empirical Bottleneck Analysis (Early Sem 2) → Principled Pivot & Final Architectural Contribution (Late Sem 2).
+
+In an academic thesis, a well-documented pivot (moving from GEWDiff + CFG to SDANet + SADS) is a strength, not a flaw—provided you back it with your actual WDC numbers, FSDP/BF16 engineering evidence, and your structured 7-model feasibility audit.
+
+Complete "Small Thesis" Structure (Chapter-by-Chapter Blueprint)
+Front Matter (4–6 pages)
+Title Page: Final unified title reflecting your core contribution (e.g., Deep Learning for Hyperspectral Image Super-Resolution: From Diffusion Guidance to Spatially-Aware Dynamic Spectral Sparsity), your name, roll number (S0230030389), IIIT Sri City, and Dr. Adduru U G Sankararao as supervisor.
+
+Certificate / Declaration & Acknowledgements: Standard IIIT Sri City BTP format.
+
+Abstract (1 page): Summarize the full arc in four tight sentences: (1) HSI-SR spatial–spectral trade-off, (2) foundational baseline study (SSRNet, HSRnet, MSHSR) and diffusion-based CFG investigation (GEWDiff on WDC), (3) hardware/compute bottleneck motivating the pivot to SDANet, and (4) your final SADS / RD-CSA contribution with key Chikusei and Pavia results.
+
+Table of Contents, List of Figures, List of Tables, List of Abbreviations (HSI-SR, DCSA, SADS, RD-CSA, CFG, EDM, SAM, ERGAS, MPSNR, MSSIM).
+
+Chapter 1: Introduction (3–4 pages)
+1.1 Background & Motivation: The hyperspectral sensor hardware trade-off (narrow spectral bands vs. coarse spatial IFOV) and why computational HSI-SR is required for remote sensing, agriculture, mineral mapping, and medical imaging.   
+Beige and Brown Plain Minimalist Modern Company Pitch Deck Presentation (1).pdf
++ 1
+
+1.2 Problem Formulation: Formal mathematical definition of Single HSI-SR (
+𝐼
+𝐿
+𝑅
+→
+𝐼
+𝑆
+𝑅
+I 
+LR
+​
+ →I 
+SR
+​
+ ) vs. Fusion-Based HSI-SR (
+𝑌
+=
+𝑋
+𝐵
+𝑆
+,
+𝑍
+=
+𝑅
+𝑋
+Y=XBS,Z=RX).   
+Beige and Brown Plain Minimalist Modern Company Pitch Deck Presentation (1).pdf
++ 1
+
+1.3 Research Objectives & Scope: State your two-semester progression clearly—from establishing verified HSI-SR baselines, to testing generative guidance in diffusion models, to solving spatial heterogeneity in dynamic spectral attention.
+
+1.4 Summary of Contributions: Bullet list separating: (a) comparative baseline engineering, (b) GEWDiff + CFG implementation and empirical guidance/compute analysis, and (c) SADS / RD-CSA architectural design and controlled ablations on SDANet.
+
+1.5 Thesis Organization: One short paragraph mapping Chapters 2 through 8.
+
+Chapter 2: Literature Review & Architectural Evolution (6–8 pages)
+Use the verified, corrected content from your Semester 1 consolidation report here.
+
+2.1 Taxonomy of Deep HSI-SR: Single-Image vs. PAN-based vs. MS-based paradigms (Wang et al., 2023), plus upsampling placement (front-end, back-end, progressive) and operators (transposed conv vs. PixelShuffle).   
+Hyperspectral_Image_Super-Resolution_Meets_Deep_Learning_A_Survey_and_Perspective.pdf
++ 1
+
+2.2 Representative Paradigms Studied (Semester 1):
+
+3D Residual CNNs — SSRNet (Wang et al., 2020): Separable 3D convolutions (
+1
+×
+3
+×
+3
+1×3×3 + 
+3
+×
+1
+×
+1
+3×1×1), SSRMs, LFF, GRL, and L1 loss.   
+2-Spatial-Spectral Residual Network for Hyperspectral.pdf
+
+Attention-Guided Fusion — HSRnet (Hu et al., 2021/2022): Bicubic spectral preservation, CA/SA, Leaky ReLU, and PixelShuffle.   
+3-Hyperspectral Image Super-Resolution via Deep CNN with Spectral Attention.pdf
+
+Hybrid CNN–Transformers — MSHSR (Zhang et al., 2025): Band splitting, dilated parallel branches (
+𝑟
+=
+1
+,
+7
+r=1,7), HSAM, and top-
+𝑘
+k Sparse Spectral Transformer.   
+Multiscale_Spatial-Spectral_CNN-Transformer_Network_for_Hyperspectral_Image_Super-Resolution.pdf
+
+2.3 Diffusion & Dynamic Attention Models (Semester 2):
+
+GEWDiff: Wavelet/RWA + PCA spectral compression + 3D U-Net + EDM sampling.
+
+Alternative Audit: Concise comparison table of the 6 audited candidates (EUNet, HSR-Diff, HSI-DMGASR, LSDiff, DAEM, DSDCN) vs. SDANet, showing why SDANet was selected.
+
+2.4 Research Gap Identified: Global dynamic sparsity in SDANet's DCSA treats spatially heterogeneous hyperspectral scenes uniformly, motivating region-aware dynamic sparsity.
+
+Chapter 3: Semester 1 — Foundational Baselines & Pipeline Verification (3–4 pages)
+Keep this concise and honest—it establishes your engineering foundation.
+
+3.1 Datasets & Evaluation Metrics: Standardize the definitions of PSNR/MPSNR, SSIM/MSSIM, SAM, ERGAS, CC, and RMSE (equations from Wang et al., 2023) and summarize CAVE, Harvard, WDC, Chikusei, and Pavia.   
+Hyperspectral_Image_Super-Resolution_Meets_Deep_Learning_A_Survey_and_Perspective.pdf
+
+3.2 Baseline Implementation & Verification: Document your March–April 2026 implementation and smoke-testing of SSRNet (CAVE 25.89 dB, Harvard 50.80 dB initial runs), HSRnet, and compact shared group-wise MSHSR (0.275M parameters), along with the pipeline debugging (dimension mismatches, pathing, encoding, automated Windows batch scripts).
+
+3.3 Key Takeaways: Why moving beyond pure CNN baselines led you to investigate generative diffusion models at the end of Semester 1 (May 2026 GEWDiff review).
+
+Chapter 4: Phase 1 (Semester 2) — Diffusion-Based HSI-SR with Classifier-Free Guidance (5–7 pages)
+Frame this as a complete, self-contained experimental investigation that produced real findings AND justified your strategic pivot.
+
+4.1 GEWDiff Architecture & Baseline Reproduction: Wavelet/RWA decomposition, PCA spectral compression, conditional 3D U-Net, and 50-step EDM sampling.
+
+4.2 Classifier-Free Guidance (CFG) Modification: Conditioning dropout during training, joint conditional/unconditional inference, fixed guidance scales (
+𝑠
+∈
+{
+1.0
+,
+1.25
+,
+1.50
+}
+s∈{1.0,1.25,1.50}), and dynamic guidance schedule (
+1.0
+→
+1.5
+1.0→1.5).
+
+4.3 Engineering Challenges & Stabilization: FSDP training overhead, checkpoint serialization/recovery issues, and resolving FP16 numerical instability by migrating to BF16.
+
+4.4 Experimental Results on WDC Dataset:
+
+Checkpoint progression table (1k → 16k → 18k → 22.2k → 28k → 31k, rising from 34.44 dB to ~35.30 dB vs. 34.35 dB reproduced baseline and 35.84 dB paper benchmark).
+
+31k CFG ablation table showing fixed 
+𝑠
+=
+1.25
+s=1.25 achieved the best reconstruction (MPSNR 35.3105 dB, MSSIM 0.7519, SAM 8.0824°, CC 0.7541, RMSE 0.04819), outperforming 
+𝑠
+=
+1.0
+s=1.0, 
+𝑠
+=
+1.50
+s=1.50, and the dynamic schedule.
+
+4.5 Computational Bottleneck & Rationale for Pivot: Explain clearly why GEWDiff-BTP was concluded at this stage—prohibitive multi-dataset compute cost and FSDP fragility prevented running full controlled ablations within a single-workstation timeline.
+
+Chapter 5: Phase 2 (Semester 2) — Proposed Methodology: SDANet & SADS / RD-CSA (7–10 pages)
+This is the centerpiece of your thesis.
+
+5.1 SDANet Baseline & DCSA Bottleneck: Explain SDANet's architecture and mathematically show why global dynamic sparsity (
+𝐾
+K) is suboptimal for spatially heterogeneous scenes (e.g., urban buildings vs. vegetation/water in Chikusei and Pavia).
+
+5.2 Spatially-Aware Dynamic Spectral Sparsity (SADS) / RD-CSA:
+
+Complete architecture diagram and data flow.
+
+Mathematical formulation of the 2×2 region-aware dynamic sparsity budget (
+𝐾
+𝑔
+K 
+g
+​
+ ) and how it modifies DCSA.
+
+5.3 Progressive Ablation Design (M0 → M1 → M2):
+
+M0: Original SDANet baseline (global scalar sparsity).
+
+M1: 2×2 region-aware scalar sparsity budget (
+𝐾
+𝑔
+K 
+g
+​
+ ).
+
+M2: Channel-specific vector dynamic sparsity budget.
+
+5.4 Additional Refinements Tested (Include only what you actually implemented): Detail your fine-gate ablations, independent upsampler, dynamic vs. fixed-weight regional fusion, or OCTTA (test-time adaptation) if executed, plus a brief note on why unprincipled bloat (BiLSTMs, arbitrary FFT→DWT swaps) was explicitly rejected.
+
+Chapter 6: Experimental Setup, Results & Analysis — SDANet / SADS (7–10 pages)
+6.1 Experimental Setup: Hardware (NVIDIA RTX A4000-class GPU, 128 GB RAM, 24-core CPU), software stack (PyTorch), datasets (Chikusei and Pavia), patch sizes, splits, optimizer, LR schedule, and loss function.
+
+6.2 Quantitative Results (Validation vs. Test Strictly Separated):
+
+Main comparison table: M0 vs. M1 vs. M2 (and any fusion/fine-gate/OCTTA variants) across MPSNR, MSSIM, SAM, ERGAS, CC, RMSE, parameter count, FLOPs, and inference time.
+
+6.3 Spatial & Spectral Diagnostics: Visual reconstructions, absolute error maps, per-region sparsity budget (
+𝐾
+𝑔
+K 
+g
+​
+ ) visualizations, and pixel-level spectral reflectance curves.
+
+6.4 Critical Discussion & Negative Findings: Honestly discuss what improved, what yielded mixed or negative results, and any trade-offs between spatial fidelity (MPSNR) and spectral distortion (SAM).
+
+Chapter 7: Conclusion & Future Work (2–3 pages)
+7.1 Summary of Two-Semester Achievements: Tie together the full arc (baselines → GEWDiff + CFG → SDANet + SADS).
+
+7.2 Limitations: Single-scene dataset overfitting, synthetic bicubic degradation assumptions, and fixed 2×2 grid partitioning.
+
+7.3 Future Work: Content-aware or multi-scale adaptive spatial partitioning beyond 2×2 grids, blind/real-world degradation modeling, and lightweight test-time adaptation.
+
+References & Appendices
+References: IEEE format covering all papers from both semesters (SSRNet, HSRnet, Wang et al. Survey, MSHSR, GEWDiff, SDANet, and the 6 audited alternatives).
+
+Appendices: Hyperparameter tables, key code snippets (CFG sampling logic, RegionalDSCA module), and extra visual/error-map grids.
+
+Quick Note on Your PPT & Viva Strategy
+Because Dr. Sankararao wants the complete story from the start, structure your presentation with the same arc—weighted heavily toward your final work:
+
+15% (2–3 slides): Problem statement, HSI-SR trade-off, and Semester 1 baseline foundations (SSRNet/HSRnet/MSHSR).
+
+25% (3–4 slides): GEWDiff + CFG implementation, WDC results (
+𝑠
+=
+1.25
+s=1.25 beating baseline), and why compute/FSDP bottlenecks motivated the pivot.
+
+60% (8–10 slides): SDANet limitation → SADS / RD-CSA (
+2
+×
+2
+2×2 region-aware 
+𝐾
+𝑔
+K 
+g
+​
+ ) → M0/M1/M2 ablations on Chikusei & Pavia → diagnostics, takeaways, and future work.
+
+If you want, we can start drafting this thesis chapter by chapter—just paste your final SDANet / SADS numerical tables and ablation logs whenever you're ready to build Chapters 5 and 6.
+\
+
+
+2
+Fair point—45–50 pages is overkill on a deadline. For a "kind of small thesis" covering two semesters, the sweet spot is 25–30 pages total (and once you include front matter, architecture diagrams, tables, error maps, and references, that is only about 15–18 pages of actual writing).
+
+Here is a tight 25–30 page budget that keeps the full two-semester story without bloating the early chapters:
+
+Section	Target Pages	How to Keep It Crisp
+Front Matter (Title, Certificate, Abstract, TOC)	3–4 pages	1-page Title, 1-page Certificate/Declaration, 1-page Abstract, 1-page TOC.
+Ch 1: Introduction & Problem Formulation	2–3 pages	HSI-SR trade-off, Single vs. Fusion equations, objectives, and 3-bullet contributions.
+Ch 2: Literature Review & Sem 1 Baselines	4–5 pages	Merge Literature Review + Sem 1 work into one chapter: brief SSRNet/HSRnet/MSHSR summary + 1 table of your Mar–Apr 2026 baseline smoke tests.
+Ch 3: Phase 1 — GEWDiff + CFG Investigation	3–4 pages	GEWDiff pipeline, CFG dropout/sampling, BF16/FSDP fix, your 31k WDC results table (s=1.25 best), and 1 paragraph on why compute cost forced the pivot.
+Ch 4: Phase 2 — Proposed SDANet + SADS / RD-CSA	5–6 pages	DCSA global-sparsity bottleneck, your 2×2 region-aware K 
+g
+​
+  math, architecture diagram, and M0 → M1 → M2 ablation design.
+Ch 5: Experimental Results & Diagnostics (SDANet)	5–6 pages	Chikusei & Pavia setup, main comparison tables (val vs. test), visual error maps/spectral curves, and honest discussion of trade-offs.
+Ch 6: Conclusion & Future Work	1.5–2 pages	Summary of the two-semester arc, limitations, and 3 concrete future directions.
+References	1–2 pages	15–20 core IEEE references (skip bulky appendices unless you have extra plots).
+Total	25–32 pages	Clean, thesis-grade, zero filler.
+Why This Works Better
+Zero repetition: Merging Semester 1's literature review and baseline verification into Chapter 2 cuts 5+ pages immediately while still showing Dr. Sankararao the complete journey from the start.
+
+Visuals do the heavy lifting: With standard 1.5 line spacing (12pt font), 4–5 clean figures and 4–5 result tables naturally fill ~8–10 pages on their own.
+
+If you want to aim for this ~25–28 page target, paste your SDANet / SADS results and final setup details whenever you're ready, and we can draft it cleanly chapter by chapter.
+
+
+Fair enough—let's cut it down to a lean 15–18 pages total (which is really only 8–10 pages of actual writing once you count the title page, TOC, diagrams, tables, and references).Here is the ultra-compact blueprint that still satisfies Dr. Sankararao's "complete report from starting, kind of small thesis":SectionTarget PagesWhat Goes In (Zero Fluff)Front Matter (Title, Certificate, Abstract, TOC)3 pages1-page Title, 1-page Certificate/Declaration, 1-page Abstract + TOC.1. Introduction & Background2 pagesHSI-SR spatial–spectral trade-off, Single vs. Fusion equations, and your two-semester objective.2. Literature Review & Sem 1 Baselines2.5 pagesOne compact comparison table of SSRNet, HSRnet, and MSHSR + 1 short paragraph on your Mar–Apr 2026 baseline smoke tests.3. Phase 1: GEWDiff + CFG Investigation2.5 pagesBrief architecture overview, CFG dropout/BF16 fix, your WDC 31k results table ($s=1.25$ best), and 3–4 lines on why compute cost forced the pivot.4. Phase 2: Proposed SDANet + SADS / RD-CSA3 pagesDCSA global-sparsity bottleneck, your $2\times2$ region-aware $K_g$ math, 1 clean architecture diagram, and the M0 → M1 → M2 ablation design.5. Experiments & Results (SDANet)3 pagesChikusei & Pavia setup, your main quantitative table, 1–2 visual/error-map figures, and key takeaways.6. Conclusion, Future Work & References2 pagesHalf-page conclusion/future work + 1.5 pages of core IEEE references.Total~18 pagesCrisp, complete, and totally doable.
